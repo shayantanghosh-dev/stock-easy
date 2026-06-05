@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dealers Management - Stock Easy</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#00714d",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#b0c6ff",
+                      "inverse-primary": "#b0c6ff",
+                      "primary-fixed": "#d9e2ff",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-surface-variant": "#434653",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "on-primary-container": "#bcceff",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#0f52ba",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#001945",
+                      "tertiary": "#3d4143",
+                      "on-primary-fixed-variant": "#00419c",
+                      "background": "#f8f9ff",
+                      "primary": "#003c90",
+                      "tertiary-fixed": "#e0e3e5",
+                      "on-tertiary-container": "#ccced0",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#eff4ff",
+                      "surface-variant": "#d3e4fe",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "surface-tint": "#1d59c1",
+                      "on-tertiary-fixed": "#191c1e",
+                      "outline-variant": "#c3c6d5",
+                      "surface-bright": "#f8f9ff",
+                      "surface-dim": "#cbdbf5",
+                      "secondary-container": "#6cf8bb",
+                      "surface-container": "#e5eeff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "on-background": "#0b1c30",
+                      "outline": "#737784",
+                      "on-surface": "#0b1c30",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#002113",
+                      "on-secondary-fixed-variant": "#005236",
+                      "tertiary-container": "#55585a",
+                      "secondary": "#006c49",
+                      "surface-container-highest": "#d3e4fe",
+                      "inverse-surface": "#213145",
+                      "surface": "#f8f9ff",
+                      "surface-container-high": "#dce9ff",
+                      "secondary-fixed": "#6ffbbe",
+                      "error-container": "#ffdad6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "sm": "8px",
+                      "container-max": "1440px",
+                      "xl": "40px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "base": "4px",
+                      "margin": "32px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "data-mono": ["JetBrains Mono"],
+                      "headline-md": ["Geist"],
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg-mobile": ["Geist"],
+                      "headline-lg": ["Geist"],
+                      "label-sm": ["Inter"],
+                      "display-lg": ["Geist"]
+              },
+              "fontSize": {
+                      "data-mono": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .modal-overlay {
+            background-color: rgba(11, 28, 48, 0.4);
+            backdrop-filter: blur(4px);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant flex flex-col py-lg px-md z-50">
+<div class="flex items-center gap-md px-sm mb-xl">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Stock Easy</h1>
+<p class="text-label-sm font-label-sm text-outline">Pharmacy Solutions</p>
+</div>
+</div>
+<nav class="flex-1 space-y-xs">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-primary bg-surface-container-high font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-md text-label-md">AI Assistant</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-lg">
+<a class="flex items-center gap-md px-md py-sm rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-64 min-h-screen flex flex-col relative">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-40 bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-gutter w-full">
+<div class="flex items-center gap-lg flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Search dealers, contacts, or locations..." type="text"/>
+</div>
+<div class="flex items-center gap-md">
+<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Docs</a>
+<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-sm"></div>
+<div class="flex items-center gap-sm cursor-pointer group">
+<div class="text-right hidden lg:block">
+<p class="text-label-sm font-label-sm text-on-surface leading-tight">Dr. Sarah Chen</p>
+<p class="text-[10px] text-outline leading-tight">Head Pharmacist</p>
+</div>
+<img alt="Pharmacist Profile" class="w-9 h-9 rounded-full border border-outline-variant object-cover group-hover:border-primary transition-colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFFltVsHIErvi8By5vTK78vwFt-t2wDZd93zwjejM70I_NyQDxD9aPF4lA1AFlcAuwSeX09stFIcVsoIGqFq3PayC9Oa06ZiePthBvMersYNwsiAfTjSzEa0-E4hU07zBbX1rpoal0knZL_iX0EQxRB808Ql9pNIQc2I51xZOtDaawzNNIwhcuiDW3dEfPLu-c5HqQsDp_0Dezl4p0zYn2SjeEM6688QyfjgkoI92SHoD2Mo3jv1ky9RYqmM9anfFML2D7wSaWBmPY"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<section class="p-gutter flex-1 overflow-y-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Dealers Management</h2>
+<p class="text-body-md text-on-surface-variant mt-1">Manage wholesale partners, order history, and logistics information.</p>
+</div>
+<button class="bg-primary text-on-primary px-lg py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-sm hover:opacity-90 active:scale-95 transition-all shadow-sm" onclick="toggleModal('add-dealer-modal')">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Add Dealer
+                </button>
+</div>
+<!-- Stats Overview (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl">
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-[0_4px_12px_rgba(15,82,186,0.05)]">
+<div class="flex justify-between items-start mb-md">
+<span class="p-2 bg-surface-container-high text-primary rounded-lg">
+<span class="material-symbols-outlined">hub</span>
+</span>
+<span class="text-on-secondary-container text-label-sm font-label-sm">+3 new</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">Total Dealers</p>
+<p class="text-headline-md font-headline-md mt-1">124</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-[0_4px_12px_rgba(15,82,186,0.05)]">
+<div class="flex justify-between items-start mb-md">
+<span class="p-2 bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined">shopping_cart_checkout</span>
+</span>
+<span class="text-on-secondary-container text-label-sm font-label-sm">8 active today</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">Orders Pending</p>
+<p class="text-headline-md font-headline-md mt-1">42</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-[0_4px_12px_rgba(15,82,186,0.05)]">
+<div class="flex justify-between items-start mb-md">
+<span class="p-2 bg-error-container text-on-error-container rounded-lg">
+<span class="material-symbols-outlined">payments</span>
+</span>
+<span class="text-error text-label-sm font-label-sm">High Priority</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">Total Outstanding</p>
+<p class="text-headline-md font-headline-md mt-1 font-data-mono text-data-mono">$12,450.00</p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-lg rounded-xl shadow-[0_4px_12px_rgba(15,82,186,0.05)]">
+<div class="flex justify-between items-start mb-md">
+<span class="p-2 bg-surface-container-high text-on-surface-variant rounded-lg">
+<span class="material-symbols-outlined">local_shipping</span>
+</span>
+<span class="text-outline text-label-sm font-label-sm">Avg. 2.4 days</span>
+</div>
+<p class="text-label-sm text-outline uppercase tracking-wider">Delivery Rate</p>
+<p class="text-headline-md font-headline-md mt-1">98.2%</p>
+</div>
+</div>
+<!-- Dealers Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-[0_4px_12px_rgba(15,82,186,0.05)]">
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low/50">
+<h3 class="font-headline-md text-body-lg font-semibold text-on-surface">Registered Wholesalers</h3>
+<div class="flex gap-sm">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/30 border-b border-outline-variant">
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Dealer Name</th>
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Contact Person</th>
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Phone</th>
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Location</th>
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Total Orders</th>
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Last Purchase</th>
+<th class="px-lg py-4 text-label-sm font-label-sm uppercase text-outline">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/50">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="openDealerDetail('MedLife Wholesale', 'Dr. James Wilson', '$2,450.00')">
+<td class="px-lg py-4">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center font-bold text-[12px]">ML</div>
+<span class="font-semibold text-primary">MedLife Wholesale</span>
+</div>
+</td>
+<td class="px-lg py-4 text-body-sm">Dr. James Wilson</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-on-surface-variant">+1 234-567-8901</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-xs text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                                        Chicago, IL
+                                    </div>
+</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-center">148</td>
+<td class="px-lg py-4 text-body-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-lg py-4">
+<button class="text-primary hover:underline font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">View Details</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="openDealerDetail('Apex Pharma', 'Sarah Jenkins', '$1,120.00')">
+<td class="px-lg py-4">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-secondary/10 text-secondary flex items-center justify-center font-bold text-[12px]">AP</div>
+<span class="font-semibold text-primary">Apex Pharma</span>
+</div>
+</td>
+<td class="px-lg py-4 text-body-sm">Sarah Jenkins</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-on-surface-variant">+1 455-888-0022</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-xs text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                                        Boston, MA
+                                    </div>
+</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-center">89</td>
+<td class="px-lg py-4 text-body-sm text-on-surface-variant">Nov 02, 2023</td>
+<td class="px-lg py-4">
+<button class="text-primary hover:underline font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">View Details</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="openDealerDetail('Global Meds Ltd', 'Michael Rodriguez', '$0.00')">
+<td class="px-lg py-4">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-bold text-[12px]">GM</div>
+<span class="font-semibold text-primary">Global Meds Ltd</span>
+</div>
+</td>
+<td class="px-lg py-4 text-body-sm">Michael Rodriguez</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-on-surface-variant">+1 212-333-4444</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-xs text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                                        New York, NY
+                                    </div>
+</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-center">215</td>
+<td class="px-lg py-4 text-body-sm text-on-surface-variant">Nov 15, 2023</td>
+<td class="px-lg py-4">
+<button class="text-primary hover:underline font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">View Details</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer" onclick="openDealerDetail('CureAll Distribution', 'Anna Lee', '$8,880.00')">
+<td class="px-lg py-4">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-error-container text-on-error-container flex items-center justify-center font-bold text-[12px]">CA</div>
+<span class="font-semibold text-primary">CureAll Distribution</span>
+</div>
+</td>
+<td class="px-lg py-4 text-body-sm">Anna Lee</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-on-surface-variant">+1 505-111-2222</td>
+<td class="px-lg py-4">
+<div class="flex items-center gap-xs text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                                        Santa Fe, NM
+                                    </div>
+</td>
+<td class="px-lg py-4 font-data-mono text-data-mono text-center">32</td>
+<td class="px-lg py-4 text-body-sm text-on-surface-variant">Nov 12, 2023</td>
+<td class="px-lg py-4">
+<button class="text-primary hover:underline font-label-md text-label-md opacity-0 group-hover:opacity-100 transition-opacity">View Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-lg py-md border-t border-outline-variant bg-surface-container-low/20 flex justify-between items-center">
+<p class="text-body-sm text-outline">Showing 1-4 of 124 dealers</p>
+<div class="flex gap-xs">
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg hover:bg-surface-container-high text-body-sm disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg hover:bg-surface-container-high text-body-sm">Next</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Slide-over Detail View -->
+<div class="fixed inset-0 z-[60] invisible transition-all duration-300" id="dealer-detail-panel">
+<div class="absolute inset-0 modal-overlay" onclick="closeDealerDetail()"></div>
+<div class="absolute right-0 top-0 h-full w-full max-w-xl bg-surface shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col border-l border-outline-variant" id="panel-content">
+<div class="px-lg py-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface" id="detail-dealer-name">Dealer Details</h3>
+<p class="text-body-md text-on-surface-variant" id="detail-contact">Contact info loading...</p>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="closeDealerDetail()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg space-y-xl">
+<!-- Outstanding Balance Card -->
+<div class="bg-primary-container text-on-primary-container p-lg rounded-xl flex justify-between items-center">
+<div>
+<p class="text-label-sm font-label-sm uppercase tracking-wider opacity-80">Outstanding Balance</p>
+<p class="text-headline-lg font-headline-lg font-data-mono mt-1" id="detail-balance">$0.00</p>
+</div>
+<button class="bg-on-primary-container text-primary-container px-md py-2 rounded-lg font-label-md text-label-md hover:bg-white transition-colors">
+                        Settle Now
+                    </button>
+</div>
+<!-- Logistics Section -->
+<div>
+<h4 class="text-label-sm font-label-sm uppercase text-outline mb-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                        Shipping &amp; Logistics
+                    </h4>
+<div class="grid grid-cols-2 gap-md">
+<div class="p-md border border-outline-variant rounded-lg bg-surface-container-low/50">
+<p class="text-[10px] text-outline uppercase font-bold">Priority Status</p>
+<p class="text-body-md font-semibold mt-1">Tier 1 Partner</p>
+</div>
+<div class="p-md border border-outline-variant rounded-lg bg-surface-container-low/50">
+<p class="text-[10px] text-outline uppercase font-bold">Standard Lead Time</p>
+<p class="text-body-md font-semibold mt-1">24-48 Hours</p>
+</div>
+</div>
+</div>
+<!-- Purchase History -->
+<div>
+<h4 class="text-label-sm font-label-sm uppercase text-outline mb-md">Recent Purchase History</h4>
+<div class="space-y-sm">
+<div class="p-md border border-outline-variant rounded-lg flex justify-between items-center hover:border-primary/50 transition-colors cursor-pointer">
+<div>
+<p class="font-data-mono text-body-sm font-bold">ORD-2023-9921</p>
+<p class="text-body-sm text-outline">Nov 14, 2023 • 12 Items</p>
+</div>
+<div class="text-right">
+<p class="font-data-mono font-semibold">$1,240.00</p>
+<span class="inline-flex items-center gap-xs text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-on-secondary-container rounded-full"></span> Deliv
+                                </span>
+</div>
+</div>
+<div class="p-md border border-outline-variant rounded-lg flex justify-between items-center hover:border-primary/50 transition-colors cursor-pointer">
+<div>
+<p class="font-data-mono text-body-sm font-bold">ORD-2023-8845</p>
+<p class="text-body-sm text-outline">Oct 28, 2023 • 4 Items</p>
+</div>
+<div class="text-right">
+<p class="font-data-mono font-semibold">$450.50</p>
+<span class="inline-flex items-center gap-xs text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-on-secondary-container rounded-full"></span> Deliv
+                                </span>
+</div>
+</div>
+<div class="p-md border border-outline-variant rounded-lg flex justify-between items-center hover:border-primary/50 transition-colors cursor-pointer">
+<div>
+<p class="font-data-mono text-body-sm font-bold">ORD-2023-7712</p>
+<p class="text-body-sm text-outline">Oct 12, 2023 • 22 Items</p>
+</div>
+<div class="text-right">
+<p class="font-data-mono font-semibold">$3,100.00</p>
+<span class="inline-flex items-center gap-xs text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold uppercase">
+<span class="w-1.5 h-1.5 bg-on-secondary-container rounded-full"></span> Deliv
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Visual Asset / Map Mock -->
+<div class="rounded-xl overflow-hidden border border-outline-variant h-40 relative group">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" data-alt="A clean and professional digital map visualization of a city grid with medical delivery points highlighted in bright pharmacy blue. The map is presented in a modern, light-mode aesthetic with soft grays and crisp white outlines. High-end user interface design elements overlay the map, showing delivery routes and distribution hubs. The lighting is bright and laboratory-clean, conveying reliability and high-speed logistics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGbvoGcUD-1v2b5hsOKQpI97eh-LoH8RxkprGCH6vEh3cNl3q6C8JHSYrlZbimcE-xVkcYWzGUSMmQ7HDMQwCbAPyOZ2YzHoEMj562IA79j012IWeTxYVmApilaSTG1EnIj3DmVJoVPm9O0HPgp9xR-aA1AsO5K-YO7CAuy2E-5MhQ5deFRixOCHReFQmgDusfmvQwaxcNP-BCBJe9Z3Vz0YvIJZx9w-Dy9_Z3tWvWzqto7esomCO7LWXWDDN2H6zRhCnnm4pR0h8A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/60 to-transparent flex items-end p-md">
+<p class="text-white font-label-md text-label-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">explore</span>
+                            View Logistics Map
+                        </p>
+</div>
+</div>
+</div>
+<div class="p-lg border-t border-outline-variant bg-surface-container-low/30 grid grid-cols-2 gap-md">
+<button class="w-full py-2.5 border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-colors">Edit Profile</button>
+<button class="w-full py-2.5 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">Create New Order</button>
+</div>
+</div>
+</div>
+<!-- Modal for Add Dealer -->
+<div class="fixed inset-0 z-[70] hidden items-center justify-center p-md" id="add-dealer-modal">
+<div class="absolute inset-0 modal-overlay" onclick="toggleModal('add-dealer-modal')"></div>
+<div class="relative w-full max-w-lg bg-surface rounded-xl shadow-2xl border border-outline-variant flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+<div class="px-lg py-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-md text-headline-md text-on-surface">Add New Dealer</h3>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="toggleModal('add-dealer-modal')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<form class="p-lg space-y-lg">
+<div class="space-y-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant block">Dealer / Company Name</label>
+<input class="w-full px-md py-2.5 border border-outline-variant rounded-lg bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="e.g. HealthLogics Distribution" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-lg">
+<div class="space-y-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant block">Primary Contact</label>
+<input class="w-full px-md py-2.5 border border-outline-variant rounded-lg bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Full Name" type="text"/>
+</div>
+<div class="space-y-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant block">Phone Number</label>
+<input class="w-full px-md py-2.5 border border-outline-variant rounded-lg bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="+1 (555) 000-0000" type="tel"/>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant block">Warehouse Location</label>
+<input class="w-full px-md py-2.5 border border-outline-variant rounded-lg bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="City, State" type="text"/>
+</div>
+<div class="flex items-center gap-sm p-md bg-surface-container-low rounded-lg border border-outline-variant/50">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-body-sm text-on-surface-variant">New dealers are automatically assigned to the <span class="font-bold">Standard Tier</span> logistics profile.</p>
+</div>
+</form>
+<div class="px-lg py-md border-t border-outline-variant bg-surface-container-low/30 flex justify-end gap-md">
+<button class="px-lg py-2.5 border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-colors" onclick="toggleModal('add-dealer-modal')">Cancel</button>
+<button class="px-lg py-2.5 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">Register Dealer</button>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function openDealerDetail(name, contact, balance) {
+            const panel = document.getElementById('dealer-detail-panel');
+            const content = document.getElementById('panel-content');
+            
+            document.getElementById('detail-dealer-name').innerText = name;
+            document.getElementById('detail-contact').innerText = contact;
+            document.getElementById('detail-balance').innerText = balance;
+            
+            panel.classList.remove('invisible');
+            setTimeout(() => {
+                content.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function closeDealerDetail() {
+            const panel = document.getElementById('dealer-detail-panel');
+            const content = document.getElementById('panel-content');
+            
+            content.classList.add('translate-x-full');
+            setTimeout(() => {
+                panel.classList.add('invisible');
+            }, 300);
+        }
+
+        // Micro-interaction for hover states and keyboard escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDealerDetail();
+                document.getElementById('add-dealer-modal').classList.add('hidden');
+                document.getElementById('add-dealer-modal').classList.remove('flex');
+            }
+        });
+    </script>
+</body></html>

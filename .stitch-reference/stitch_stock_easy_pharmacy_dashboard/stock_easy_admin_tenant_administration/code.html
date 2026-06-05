@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tenant Administration | Stock Easy</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#c3c6d5",
+                    "surface-dim": "#cbdbf5",
+                    "on-secondary-fixed": "#002113",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#6cf8bb",
+                    "surface-variant": "#d3e4fe",
+                    "inverse-surface": "#213145",
+                    "error": "#ba1a1a",
+                    "secondary": "#006c49",
+                    "primary-fixed": "#d9e2ff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "secondary-fixed": "#6ffbbe",
+                    "tertiary-container": "#55585a",
+                    "on-primary-fixed": "#001945",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#b0c6ff",
+                    "on-secondary-container": "#00714d",
+                    "on-error": "#ffffff",
+                    "on-surface": "#0b1c30",
+                    "surface": "#f8f9ff",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#4edea3",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "tertiary-fixed": "#e0e3e5",
+                    "surface-container-high": "#dce9ff",
+                    "on-primary-fixed-variant": "#00419c",
+                    "on-primary-container": "#bcceff",
+                    "on-surface-variant": "#434653",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-tertiary-fixed": "#191c1e",
+                    "surface-container": "#e5eeff",
+                    "on-background": "#0b1c30",
+                    "primary": "#003c90",
+                    "primary-container": "#0f52ba"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "xs": "4px",
+                    "container-max": "1440px",
+                    "margin": "32px",
+                    "lg": "24px",
+                    "gutter": "24px",
+                    "xl": "40px",
+                    "md": "16px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Geist"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-lg": ["Geist"],
+                    "data-mono": ["JetBrains Mono"],
+                    "display-lg": ["Geist"],
+                    "label-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "data-mono": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .clinical-shadow {
+            box-shadow: 0 4px 12px rgba(15, 82, 186, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface">
+<!-- Shell Layout -->
+<div class="flex min-h-screen">
+<!-- SideNavBar (Predicted Component) -->
+<aside class="hidden lg:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant py-6 px-4 z-50">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary leading-tight">Stock Easy</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Pharmacy OS</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active Tab: Administration -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Billing</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-md text-label-md">AI Assistant</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-surface-container-high text-primary rounded-lg font-bold scale-[0.99] transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">card_membership</span>
+<span class="font-label-md text-label-md">Subscription</span>
+</a>
+</nav>
+<button class="mb-6 mx-2 py-2 px-4 bg-primary text-white rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm">
+                Stock In
+            </button>
+<div class="border-t border-outline-variant pt-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:pl-64 flex flex-col min-h-screen">
+<!-- TopNavBar (Predicted Component) -->
+<header class="sticky top-0 z-40 w-full h-16 flex justify-between items-center px-gutter bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-2 pl-10 pr-4 font-body-sm text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" placeholder="Search tenants by pharmacy name or admin..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="flex items-center gap-3 border-l border-outline-variant pl-6">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-label-md">Platform Admin</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Superuser</p>
+</div>
+<img class="w-9 h-9 rounded-full object-cover ring-2 ring-surface shadow-sm" data-alt="A professional portrait of a tech administrator with short dark hair, wearing a navy blue blazer and a crisp white shirt. The person has a friendly, authoritative expression. The background is a blurred high-end medical laboratory with cool blue tones and sleek clinical equipment. The lighting is soft and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq29nRFMfQsbGpKYvxM8goC5nsaOpQYalrAo7p8ecJb_A3nK1VanIPMfL62RjB8SmkrxE8fsRlFd8DyuzzHXbLVl54ntU3nuutio3BMTIJYL-gsHnGmrzkdSuIL_9CZQBWdInmd1vxwn5G_ngqd36B0Xmc9cqqDZyU4SSgynNdSBsAT51ctHt_dwKqOmWfZ7_0tLcfRt7Wc4V2sG34nRn6Ug_hwg7EaG9Nkt1S81PUcOQXd5JLA81kYQfI7FAgrfnyf45CFHZce-6j"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 p-gutter lg:p-xl space-y-lg overflow-x-hidden">
+<!-- Page Header & Key Metrics -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-md mb-2">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Tenant Administration</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage global pharmacy ecosystem and network access control.</p>
+</div>
+<div class="flex items-center gap-sm">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-md">download</span>
+                            Export CVS
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md text-label-md hover:bg-on-secondary-container transition-all">
+<span class="material-symbols-outlined text-md">add_business</span>
+                            Onboard New Tenant
+                        </button>
+</div>
+</div>
+<!-- Bento Grid Metrics -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-white p-lg rounded-xl border border-outline-variant clinical-shadow flex flex-col gap-2">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Total Pharmacies</p>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">1,248</span>
+<span class="font-data-mono text-secondary text-xs font-bold">+12%</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant clinical-shadow flex flex-col gap-2">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Active Licenses</p>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">1,182</span>
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant clinical-shadow flex flex-col gap-2">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">System Health</p>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">99.98%</span>
+<span class="font-data-mono text-on-surface-variant text-xs">Uptime</span>
+</div>
+</div>
+<div class="bg-white p-lg rounded-xl border border-outline-variant clinical-shadow flex flex-col gap-2">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Enterprise Tier</p>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg text-on-surface">142</span>
+<span class="font-data-mono text-primary text-xs">Tenants</span>
+</div>
+</div>
+</div>
+<!-- Table Filters -->
+<div class="bg-white p-md rounded-xl border border-outline-variant flex flex-wrap items-center justify-between gap-md">
+<div class="flex flex-wrap items-center gap-md">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tier:</span>
+<select class="bg-surface-container-low border border-outline-variant rounded-lg py-1.5 pl-3 pr-8 font-label-md text-label-md outline-none focus:ring-1 focus:ring-primary appearance-none">
+<option>All Plans</option>
+<option>Enterprise</option>
+<option>Professional</option>
+<option>Essential</option>
+</select>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Status:</span>
+<div class="flex p-1 bg-surface-container-low rounded-lg border border-outline-variant">
+<button class="px-4 py-1 rounded-md bg-white shadow-sm font-label-md text-label-md text-primary">All</button>
+<button class="px-4 py-1 rounded-md hover:bg-white/50 transition-all font-label-md text-label-md text-on-surface-variant">Active</button>
+<button class="px-4 py-1 rounded-md hover:bg-white/50 transition-all font-label-md text-label-md text-on-surface-variant">Suspended</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant italic">Showing 1-15 of 1,248</span>
+<div class="flex border border-outline-variant rounded-lg overflow-hidden">
+<button class="p-2 bg-surface-container-low hover:bg-surface-container hover:text-primary transition-all border-r border-outline-variant">
+<span class="material-symbols-outlined text-md">chevron_left</span>
+</button>
+<button class="p-2 bg-surface-container-low hover:bg-surface-container hover:text-primary transition-all">
+<span class="material-symbols-outlined text-md">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-white rounded-xl border border-outline-variant overflow-hidden clinical-shadow">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-outline-variant">
+<th class="px-6 py-4 font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider">Pharmacy Name</th>
+<th class="px-6 py-4 font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider">Admin User</th>
+<th class="px-6 py-4 font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider">Current Plan</th>
+<th class="px-6 py-4 font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider">Last Activity</th>
+<th class="px-6 py-4 font-label-sm text-label-sm uppercase text-on-surface-variant tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">CH</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">City Health Central</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant/70 text-xs">ID: T-10492</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-body-sm text-body-sm">Dr. Aris Thorne</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-xs">aris.thorne@cityhealth.com</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary uppercase tracking-tight">Enterprise</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface-variant">
+                                        2 mins ago
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="View Details">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="Edit Plan">
+<span class="material-symbols-outlined text-lg">edit_calendar</span>
+</button>
+<button class="p-1.5 rounded-md text-error hover:bg-error-container transition-all" title="Suspend">
+<span class="material-symbols-outlined text-lg">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold text-xs">NP</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Nova Pharmacy Group</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant/70 text-xs">ID: T-10381</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-body-sm text-body-sm">Elena Rodriguez</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-xs">e.rodriguez@nova.org</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant uppercase tracking-tight">Professional</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-label-md text-label-md">Suspended</span>
+</div>
+</td>
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface-variant">
+                                        14 days ago
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="View Details">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="Edit Plan">
+<span class="material-symbols-outlined text-lg">edit_calendar</span>
+</button>
+<button class="p-1.5 rounded-md text-secondary hover:bg-secondary-container transition-all" title="Activate">
+<span class="material-symbols-outlined text-lg">task_alt</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary font-bold text-xs">VP</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Valley Pharma Hub</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant/70 text-xs">ID: T-10552</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-body-sm text-body-sm">Samuel Kim</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-xs">skim@valleypharma.com</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary uppercase tracking-tight">Enterprise</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface-variant">
+                                        Just now
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="View Details">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="Edit Plan">
+<span class="material-symbols-outlined text-lg">edit_calendar</span>
+</button>
+<button class="p-1.5 rounded-md text-error hover:bg-error-container transition-all" title="Suspend">
+<span class="material-symbols-outlined text-lg">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-outline-variant flex items-center justify-center text-on-surface-variant font-bold text-xs">BP</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Beacon Point Meds</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant/70 text-xs">ID: T-10219</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-body-sm text-body-sm">Sarah Jenkins</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-xs">s.jenkins@beacon.health</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container-highest text-on-surface-variant uppercase tracking-tight">Essential</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface-variant">
+                                        4 hours ago
+                                    </td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="View Details">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-container-high transition-all" title="Edit Plan">
+<span class="material-symbols-outlined text-lg">edit_calendar</span>
+</button>
+<button class="p-1.5 rounded-md text-error hover:bg-error-container transition-all" title="Suspend">
+<span class="material-symbols-outlined text-lg">block</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Footer Stats -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter pb-xl">
+<div class="bg-white p-lg rounded-xl border border-outline-variant clinical-shadow">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-label-md text-label-md">Tenant Growth Trends</h3>
+<span class="material-symbols-outlined text-on-surface-variant">trending_up</span>
+</div>
+<div class="h-40 w-full bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant flex items-end justify-between px-4 pb-2">
+<!-- Simple visual bar chart placeholder -->
+<div class="w-6 bg-primary-container/20 h-[30%] rounded-t-sm"></div>
+<div class="w-6 bg-primary-container/30 h-[45%] rounded-t-sm"></div>
+<div class="w-6 bg-primary-container/40 h-[60%] rounded-t-sm"></div>
+<div class="w-6 bg-primary-container/50 h-[55%] rounded-t-sm"></div>
+<div class="w-6 bg-primary-container/60 h-[75%] rounded-t-sm"></div>
+<div class="w-6 bg-primary-container/70 h-[85%] rounded-t-sm"></div>
+<div class="w-6 bg-primary h-full rounded-t-sm"></div>
+</div>
+</div>
+<div class="bg-primary p-lg rounded-xl clinical-shadow text-white flex flex-col justify-between relative overflow-hidden">
+<!-- Decorative glow -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+<div>
+<p class="font-label-sm text-label-sm uppercase tracking-widest text-white/70">System Message</p>
+<h3 class="font-headline-md text-headline-md mt-1 leading-tight">Database performance is currently optimized.</h3>
+<p class="font-body-sm text-body-sm mt-2 text-white/80">Indexing 1.2M pharmacy transactions across global clusters. No latency issues detected in the tenant isolation layer.</p>
+</div>
+<div class="flex items-center gap-4 mt-6">
+<button class="px-4 py-2 bg-white text-primary rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all">View Performance Logs</button>
+<div class="flex items-center gap-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-fixed opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary-fixed"></span>
+</span>
+<span class="font-data-mono text-xs">Cloud Cluster: US-East-1</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action Button (FAB - Contextual) -->
+<div class="fixed bottom-8 right-8 z-50">
+<button class="group relative flex items-center justify-center w-14 h-14 bg-primary-container text-white rounded-full shadow-xl hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">add</span>
+<!-- Tooltip -->
+<span class="absolute right-full mr-4 px-3 py-1.5 bg-inverse-surface text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Rapid Tenant Onboard</span>
+</button>
+</div>
+<script>
+        // Simple micro-interaction for active row
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('bg-surface-container'));
+                row.classList.add('bg-surface-container');
+            });
+        });
+    </script>
+</body></html>

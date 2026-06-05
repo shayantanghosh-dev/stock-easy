@@ -1,0 +1,32 @@
+# Render Blueprint — Stock Easy API (apps/api).
+# Deploy: Render Dashboard → New → Blueprint → pick this repo → Apply.
+# Free web service (spins down when idle; keep it warm via UptimeRobot — see docs/DEPLOY_FREE.md).
+services:
+  - type: web
+    name: stockeasy-api
+    runtime: node          # if your Render account rejects this key, use:  env: node
+    plan: free
+    rootDir: apps/api
+    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run db:migrate && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # JWT secrets — Render generates strong random values (satisfies the ≥16-char rule).
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      # Set these in the Render dashboard (do NOT commit values):
+      - key: DATABASE_URL          # Neon connection string + ?sslmode=require (use the POOLED string if you enable pooling)
+        sync: false
+      - key: DIRECT_URL            # REQUIRED by prisma/schema.prisma (directUrl). Neon DIRECT (non-pooled) string + ?sslmode=require.
+        # For a non-pooled DB, set DIRECT_URL to the SAME value as DATABASE_URL. Without it the build's
+        # `npm run db:migrate` (prisma migrate deploy) fails with error P1012.
+        sync: false
+      - key: CORS_ORIGIN           # your Vercel app origin, e.g. https://stockeasy.vercel.app
+        sync: false
+      - key: GEMINI_API_KEY        # optional; /ai returns 503 until set
+        sync: false

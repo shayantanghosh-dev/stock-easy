@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stock Easy POS | Billing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#001945",
+                      "background": "#f8f9ff",
+                      "outline": "#737784",
+                      "surface-variant": "#d3e4fe",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "on-tertiary": "#ffffff",
+                      "tertiary": "#3d4143",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-secondary-fixed": "#002113",
+                      "on-primary-container": "#bcceff",
+                      "surface-container-low": "#eff4ff",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "tertiary-container": "#55585a",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#b0c6ff",
+                      "surface-tint": "#1d59c1",
+                      "inverse-surface": "#213145",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed": "#e0e3e5",
+                      "error": "#ba1a1a",
+                      "surface": "#f8f9ff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "primary-fixed-dim": "#b0c6ff",
+                      "primary-fixed": "#d9e2ff",
+                      "secondary": "#006c49",
+                      "surface-container": "#e5eeff",
+                      "on-tertiary-fixed": "#191c1e",
+                      "secondary-container": "#6cf8bb",
+                      "on-secondary-fixed-variant": "#005236",
+                      "surface-bright": "#f8f9ff",
+                      "on-background": "#0b1c30",
+                      "secondary-fixed": "#6ffbbe",
+                      "on-surface": "#0b1c30",
+                      "outline-variant": "#c3c6d5",
+                      "primary": "#003c90",
+                      "surface-dim": "#cbdbf5",
+                      "on-secondary-container": "#00714d",
+                      "on-primary-fixed-variant": "#00419c",
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#0f52ba",
+                      "on-surface-variant": "#434653",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-container": "#ccced0",
+                      "surface-container-high": "#dce9ff",
+                      "on-secondary": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "16px",
+                      "gutter": "24px",
+                      "sm": "8px",
+                      "margin": "32px",
+                      "lg": "24px",
+                      "xl": "40px",
+                      "container-max": "1440px",
+                      "xs": "4px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Geist"],
+                      "data-mono": ["JetBrains Mono"],
+                      "headline-lg-mobile": ["Geist"],
+                      "display-lg": ["Geist"],
+                      "label-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-md": ["Geist"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "body-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "data-mono": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d3e4fe; border-radius: 10px; }
+        .fefo-badge {
+            background: linear-gradient(90deg, #eff4ff 0%, #ffffff 100%);
+            border-left: 3px solid #003c90;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-white">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-4 bg-surface-container-lowest border-r border-outline-variant h-screen w-64 flex-shrink-0 z-50">
+<div class="mb-8 px-2">
+<h1 class="text-headline-md font-headline-md text-primary">Stock Easy</h1>
+<p class="text-label-sm font-label-sm opacity-60">Pharma POS v2.1</p>
+</div>
+<nav class="flex-grow space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-4 py-3 bg-surface-variant text-primary rounded-lg font-semibold font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="point_of_sale" style="font-variation-settings: 'FILL' 1;">point_of_sale</span>
+<span>Sales (POS)</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span>Procurement</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Reports</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1 border-t border-outline-variant pt-4">
+<button class="w-full mb-4 py-3 px-4 bg-primary text-white rounded-lg font-semibold flex items-center justify-center gap-2 shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Sale
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-gutter h-16 bg-surface border-b border-outline-variant sticky top-0 z-40">
+<div class="flex items-center gap-8">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Stock Easy POS</span>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Quick View</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Batch Look-up</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-label-sm text-label-sm" href="#">Today's Register</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="px-4 py-2 text-primary font-semibold font-label-sm text-label-sm hover:bg-surface-container-high rounded-lg transition-colors">
+                    End Shift
+                </button>
+<img alt="Pharmacist Avatar" class="w-10 h-10 rounded-full border-2 border-primary-container object-cover" data-alt="A professional pharmacist in a clean white medical coat, smiling warmly in a bright, modern pharmacy setting. The lighting is crisp and sterile, highlighting the sophisticated and reliable nature of the environment. The background shows blurred medical shelves with high-end clinical aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0iHyeCS3PNVIn_IAmnytiQb7Xg54MhxivNTYdaOtgpTcbvRXv7NhJwIETANUtgbiPPKE9RKSkLZsk29r-ZXlOm3y_RZnQ5EHKSZrrF6Esj77UnkDaq8v0OiyDeCd73vHh5r8ocSWfQBlq1B__jLQemjv9jeaidABGOSAQYHWWcwtJamAfRxNI3T5AZ2dqXe1bDzhcreaRiIZAovCamW9dVAY2_vW7UKWB_ye9LLfmEqyXCRLsSBCckEMudYWNQ7QRczPxHTc12tEQ"/>
+</div>
+</header>
+<!-- POS Workspace -->
+<div class="flex-grow flex p-gutter gap-gutter max-w-[1440px]">
+<!-- Left: Search & Cart -->
+<div class="flex-[3] flex flex-col gap-6">
+<!-- Search Bar Section -->
+<div class="bg-white p-4 rounded-xl border border-outline-variant shadow-sm">
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="search">search</span>
+<input class="w-full pl-12 pr-24 py-4 bg-background border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary-container focus:outline-none font-body-md text-body-md transition-shadow" placeholder="Search medicines by name, SKU, or generic (Ctrl + /)" type="text"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] rounded font-bold uppercase tracking-wider border border-outline-variant">Ctrl</span>
+<span class="px-2 py-1 bg-surface-container text-on-surface-variant text-[10px] rounded font-bold uppercase tracking-wider border border-outline-variant">/</span>
+</div>
+</div>
+<!-- Quick Add Grid -->
+<div class="mt-6">
+<p class="text-label-sm font-label-sm text-on-surface-variant mb-3">QUICK ADD FREQUENT ITEMS</p>
+<div class="grid grid-cols-4 gap-3">
+<button class="p-3 border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-container-low transition-all text-left group">
+<span class="block font-semibold text-label-md">Paracetamol 500mg</span>
+<span class="text-xs text-on-surface-variant">Strip of 10 • $1.20</span>
+</button>
+<button class="p-3 border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-container-low transition-all text-left group">
+<span class="block font-semibold text-label-md">Amoxicillin 250mg</span>
+<span class="text-xs text-on-surface-variant">Vial • $4.50</span>
+</button>
+<button class="p-3 border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-container-low transition-all text-left group">
+<span class="block font-semibold text-label-md">Ibuprofen 400mg</span>
+<span class="text-xs text-on-surface-variant">Strip of 15 • $2.80</span>
+</button>
+<button class="p-3 border border-outline-variant rounded-lg hover:border-primary hover:bg-surface-container-low transition-all text-left group">
+<span class="block font-semibold text-label-md">Metformin 500mg</span>
+<span class="text-xs text-on-surface-variant">Box of 30 • $9.00</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Active Cart Table -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden flex-grow flex flex-col">
+<div class="bg-surface-container-low px-gutter py-4 border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+                            Active Cart
+                        </h2>
+<span class="px-3 py-1 bg-primary-container text-white text-label-sm rounded-full">3 Items</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant border-b border-outline-variant">
+<th class="px-gutter py-4">Medicine &amp; FEFO Allocation</th>
+<th class="px-gutter py-4 w-32">Quantity</th>
+<th class="px-gutter py-4 w-32 text-right">Price</th>
+<th class="px-gutter py-4 w-32 text-right">Total</th>
+<th class="px-gutter py-4 w-12"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Item 1: FEFO Success -->
+<tr class="group hover:bg-surface-container-lowest transition-colors">
+<td class="px-gutter py-5">
+<div class="flex flex-col gap-1">
+<span class="font-semibold text-body-md">Azithromycin 500mg (Zithromax)</span>
+<div class="flex flex-wrap gap-2 mt-1">
+<span class="fefo-badge px-2 py-0.5 rounded text-[11px] font-data-mono flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="inventory" style="font-variation-settings: 'opsz' 14;">inventory</span>
+                                                    #B29402 [15u]
+                                                </span>
+<span class="fefo-badge px-2 py-0.5 rounded text-[11px] font-data-mono flex items-center gap-1 opacity-70">
+<span class="material-symbols-outlined text-[14px]" data-icon="inventory" style="font-variation-settings: 'opsz' 14;">inventory</span>
+                                                    #B28311 [5u]
+                                                </span>
+</div>
+</div>
+</td>
+<td class="px-gutter py-5">
+<div class="flex items-center gap-2 border border-outline-variant rounded-lg p-1 w-fit">
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container rounded">-</button>
+<span class="w-8 text-center font-data-mono text-body-md">20</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container rounded">+</button>
+</div>
+</td>
+<td class="px-gutter py-5 text-right font-data-mono text-body-md">$12.50</td>
+<td class="px-gutter py-5 text-right font-data-mono font-semibold text-body-md text-primary">$250.00</td>
+<td class="px-gutter py-5 text-right">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Item 2: Batch Near Expiry Warning -->
+<tr class="group hover:bg-surface-container-lowest transition-colors bg-error-container/10">
+<td class="px-gutter py-5">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-body-md">Augmentin Duo 625mg</span>
+<span class="flex items-center gap-1 px-2 py-0.5 bg-error text-white text-[10px] font-bold rounded uppercase">
+<span class="material-symbols-outlined text-[12px]" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+                                                    Near Expiry
+                                                </span>
+</div>
+<div class="flex flex-wrap gap-2 mt-1">
+<span class="px-2 py-0.5 bg-error/10 text-error border border-error/20 rounded text-[11px] font-data-mono flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="history" style="font-variation-settings: 'opsz' 14;">history</span>
+                                                    #B30122 [Exp: 15 Days]
+                                                </span>
+</div>
+</div>
+</td>
+<td class="px-gutter py-5">
+<div class="flex items-center gap-2 border border-outline-variant rounded-lg p-1 w-fit">
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container rounded">-</button>
+<span class="w-8 text-center font-data-mono text-body-md">2</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container rounded">+</button>
+</div>
+</td>
+<td class="px-gutter py-5 text-right font-data-mono text-body-md">$18.20</td>
+<td class="px-gutter py-5 text-right font-data-mono font-semibold text-body-md text-primary">$36.40</td>
+<td class="px-gutter py-5 text-right">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+<!-- Item 3: Low Stock Warning -->
+<tr class="group hover:bg-surface-container-lowest transition-colors">
+<td class="px-gutter py-5">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-body-md">Ventolin Inhaler 100mcg</span>
+<span class="px-2 py-0.5 bg-tertiary-container/20 text-tertiary text-[10px] font-bold rounded border border-tertiary-container/30 uppercase">
+                                                    Low Stock
+                                                </span>
+</div>
+<div class="flex flex-wrap gap-2 mt-1">
+<span class="fefo-badge px-2 py-0.5 rounded text-[11px] font-data-mono flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="inventory" style="font-variation-settings: 'opsz' 14;">inventory</span>
+                                                    #B11290 [1u remaining]
+                                                </span>
+</div>
+</div>
+</td>
+<td class="px-gutter py-5">
+<div class="flex items-center gap-2 border border-outline-variant rounded-lg p-1 w-fit">
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container rounded">-</button>
+<span class="w-8 text-center font-data-mono text-body-md">1</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container rounded">+</button>
+</div>
+</td>
+<td class="px-gutter py-5 text-right font-data-mono text-body-md">$45.00</td>
+<td class="px-gutter py-5 text-right font-data-mono font-semibold text-body-md text-primary">$45.00</td>
+<td class="px-gutter py-5 text-right">
+<button class="text-error opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right: Checkout Sidebar -->
+<aside class="flex-1 flex flex-col gap-6">
+<!-- Customer Details -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant mb-4 uppercase tracking-wider">Customer Information</h3>
+<div class="space-y-4">
+<div>
+<label class="block font-label-sm text-label-sm mb-1.5">Select Customer</label>
+<div class="relative">
+<input class="w-full pl-10 pr-4 py-2 bg-background border border-outline-variant rounded-lg focus:ring-1 focus:ring-primary focus:outline-none" type="text" value="Walk-in Customer"/>
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline" data-icon="person">person</span>
+</div>
+</div>
+<div class="flex items-center gap-2 text-primary font-semibold text-label-sm cursor-pointer hover:underline">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+                            Add New Profile
+                        </div>
+</div>
+</div>
+<!-- Billing Summary -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Order Summary</h3>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Subtotal (3 items)</span>
+<span class="font-data-mono">$331.40</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">GST (12.5% Inc.)</span>
+<span class="font-data-mono text-secondary">$41.43</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-on-surface-variant">Discount</span>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant italic">Add Coupon</span>
+<span class="font-data-mono">-$0.00</span>
+</div>
+</div>
+</div>
+<div class="h-[1px] bg-outline-variant my-2"></div>
+<div class="flex justify-between items-center mb-4">
+<span class="font-bold text-headline-sm">Grand Total</span>
+<span class="font-data-mono font-bold text-headline-sm text-primary">$331.40</span>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-2">
+<button class="py-3 border-2 border-primary-container text-primary-container font-bold rounded-lg hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="print">print</span>
+                            Invoice
+                        </button>
+<button class="py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-lg hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="hold">pause_circle</span>
+                            Hold Sale
+                        </button>
+</div>
+<button class="w-full py-5 bg-primary text-white font-bold text-lg rounded-xl shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-[28px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                        COMPLETE CHECKOUT
+                    </button>
+<p class="text-center text-[11px] text-on-surface-variant mt-2">
+                        Keyboard Shortcut: <span class="font-bold">F12</span>
+</p>
+</div>
+<!-- Session Stats -->
+<div class="mt-auto bg-surface-container p-4 rounded-xl flex items-center justify-between border border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 bg-secondary rounded-full animate-pulse"></div>
+<span class="text-label-sm font-label-sm uppercase">Register Active</span>
+</div>
+<span class="font-data-mono text-label-sm">$1,420.55 Total Today</span>
+</div>
+</aside>
+</div>
+</main>
+<!-- Modal: Invoice Preview (Hidden by default, shown for UI demonstration) -->
+<div class="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" id="invoice-modal">
+<div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[921px]">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h2 class="text-headline-md font-headline-md">Tax Invoice Preview</h2>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors" onclick="toggleModal()">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-8 overflow-y-auto custom-scrollbar flex-grow">
+<div class="border border-outline-variant p-8 bg-white font-sans text-sm">
+<div class="flex justify-between mb-8">
+<div>
+<h1 class="text-xl font-bold text-primary">STOCK EASY PHARMA</h1>
+<p>123 Medical Plaza, Health Street</p>
+<p>GSTIN: 22AAAAA0000A1Z5</p>
+</div>
+<div class="text-right">
+<h2 class="text-lg font-bold">INVOICE #SE-94021</h2>
+<p>Date: Oct 24, 2023</p>
+<p>Time: 02:15 PM</p>
+</div>
+</div>
+<div class="mb-6 border-y border-outline-variant py-4 grid grid-cols-2">
+<div>
+<p class="text-xs uppercase text-on-surface-variant font-bold">Patient Details</p>
+<p class="font-bold">Walk-in Customer</p>
+<p>N/A</p>
+</div>
+<div class="text-right">
+<p class="text-xs uppercase text-on-surface-variant font-bold">Pharmacist</p>
+<p>Dr. Sarah Johnson</p>
+</div>
+</div>
+<table class="w-full text-left mb-8">
+<thead>
+<tr class="border-b-2 border-on-surface">
+<th class="py-2">Medicine Description</th>
+<th class="py-2">Batch</th>
+<th class="py-2 text-center">Qty</th>
+<th class="py-2 text-right">Price</th>
+<th class="py-2 text-right">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-outline-variant">
+<td class="py-3">Azithromycin 500mg</td>
+<td class="py-3">B29402</td>
+<td class="py-3 text-center">20</td>
+<td class="py-3 text-right">$12.50</td>
+<td class="py-3 text-right">$250.00</td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="py-3">Augmentin Duo 625mg</td>
+<td class="py-3">B30122</td>
+<td class="py-3 text-center">2</td>
+<td class="py-3 text-right">$18.20</td>
+<td class="py-3 text-right">$36.40</td>
+</tr>
+<tr class="border-b border-outline-variant">
+<td class="py-3">Ventolin Inhaler 100mcg</td>
+<td class="py-3">B11290</td>
+<td class="py-3 text-center">1</td>
+<td class="py-3 text-right">$45.00</td>
+<td class="py-3 text-right">$45.00</td>
+</tr>
+</tbody>
+</table>
+<div class="flex justify-end">
+<div class="w-64 space-y-2">
+<div class="flex justify-between">
+<span>Subtotal:</span>
+<span class="font-bold">$331.40</span>
+</div>
+<div class="flex justify-between text-xs">
+<span>CGST (6.25%):</span>
+<span>$20.71</span>
+</div>
+<div class="flex justify-between text-xs">
+<span>SGST (6.25%):</span>
+<span>$20.71</span>
+</div>
+<div class="flex justify-between border-t-2 border-on-surface pt-2 text-lg font-bold text-primary">
+<span>Grand Total:</span>
+<span>$331.40</span>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center text-xs text-on-surface-variant">
+<p>Thank you for choosing Stock Easy Pharmacy.</p>
+<p>Get well soon!</p>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-outline-variant bg-surface flex justify-end gap-4">
+<button class="px-6 py-2 border border-outline-variant rounded-lg font-semibold hover:bg-surface-container transition-colors" onclick="toggleModal()">Close</button>
+<button class="px-8 py-2 bg-primary text-white rounded-lg font-bold shadow-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="print">print</span>
+                    Confirm &amp; Print
+                </button>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal() {
+            const modal = document.getElementById('invoice-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            } else {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        }
+
+        // Trigger modal on "Invoice" button click
+        document.querySelectorAll('button').forEach(btn => {
+            if(btn.innerText.includes('Invoice')) {
+                btn.addEventListener('click', toggleModal);
+            }
+        });
+
+        // Simple keyboard listener for demo
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === '/') {
+                e.preventDefault();
+                document.querySelector('input[placeholder*="Search"]').focus();
+            }
+        });
+    </script>
+</body></html>

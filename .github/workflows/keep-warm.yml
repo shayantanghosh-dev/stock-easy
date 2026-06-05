@@ -1,0 +1,28 @@
+name: Keep API warm
+
+# Pings the API /health so a free (sleep-on-idle) host stays awake and the
+# Vercel proxy never hits a cold-start timeout. UptimeRobot (5-min interval) is
+# more reliable than GitHub cron — treat this as a backup. Note: GitHub disables
+# scheduled workflows after ~60 days of repo inactivity, and cron can be delayed.
+#
+# Setup: repo → Settings → Secrets and variables → Actions → Variables →
+#   New variable  API_HEALTH_URL = https://stockeasy-api.onrender.com/health
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # roughly every 10 minutes
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping API health endpoint
+        run: |
+          URL="${{ vars.API_HEALTH_URL }}"
+          if [ -z "$URL" ]; then
+            echo "API_HEALTH_URL repo variable is not set — skipping (no-op)."
+            exit 0
+          fi
+          echo "Pinging $URL"
+          curl -fsS --max-time 60 "$URL" && echo "" && echo "health OK"

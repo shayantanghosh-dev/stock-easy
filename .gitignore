@@ -1,0 +1,34 @@
+# Stock Easy — repository-root ignore rules.
+# Belt-and-suspenders over the per-app .gitignore files. Only *.env.example is tracked.
+
+# Dependencies
+**/node_modules/
+
+# Secrets & local env — NEVER commit real env files
+.env
+**/.env
+.env*.local
+**/.env*.local
+
+# Build output
+**/dist/
+**/.next/
+**/out/
+**/build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Tests / coverage / temp
+**/coverage/
+**/.tmp/
+
+# Logs
+*.log
+
+# OS / editor / local tooling
+.DS_Store
+Thumbs.db
+.claude/
+
+# Stray dev screenshots at the repo root (curated assets live in docs/screenshots/)
+/Screenshot*.png

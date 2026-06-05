@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel in-progress runs for the same ref when a new commit is pushed.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Web client — quality gates. Fails the build on type errors, lint errors,
+  # a broken production build, or a HIGH/CRITICAL vulnerability in PROD deps.
+  # ---------------------------------------------------------------------------
+  web:
+    name: Web · typecheck + lint + build + audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+        env:
+          # NEXT_PUBLIC_* is inlined at build time; a placeholder keeps the build
+          # hermetic (the app reads the real value from the deploy environment).
+          NEXT_PUBLIC_API_URL: https://api.example.com/api/v1
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  # ---------------------------------------------------------------------------
+  # API — quality gates (fast feedback before the slower test job).
+  # Audits PROD deps only: the test harness (testcontainers→dockerode→uuid)
+  # carries dev-only advisories that never ship.
+  # ---------------------------------------------------------------------------
+  api-quality:
+    name: API · typecheck + build + audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  # ---------------------------------------------------------------------------
+  # API — integration tests on a real PostgreSQL 16 via Testcontainers.
+  # (Unchanged from the project's original CI; ubuntu-latest ships Docker.)
+  # ---------------------------------------------------------------------------
+  api-tests:
+    name: API · integration tests (Vitest + Testcontainers / PostgreSQL 16)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Run integration tests with coverage
+        run: npm run test:ci
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: apps/api/coverage

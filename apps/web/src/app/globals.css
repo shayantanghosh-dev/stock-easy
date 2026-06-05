@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    @apply border-outline-variant;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Numeric data (quantities, prices, IDs) reads in JetBrains Mono. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Refined, accessible focus ring across the app. */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary/70 ring-offset-2 ring-offset-surface;
+  }
+
+  ::selection {
+    background-color: rgba(29, 78, 216, 0.16);
+  }
+
+  /* Slim, modern scrollbars (content areas). */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  /* 12-column bento grid used across dashboards. */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Elevated white card surface used throughout. */
+  .card-surface {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-xl shadow-card;
+  }
+
+  /* Hairline divider that matches the palette. */
+  .hairline {
+    @apply border-outline-variant;
+  }
+}
+
+@layer utilities {
+  /* Respect the iOS home-indicator inset for the mobile tab bar. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .h-safe-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+}

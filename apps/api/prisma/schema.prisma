@@ -1,0 +1,473 @@
+// =============================================================================
+// Stock Easy — Prisma schema
+// Medicine inventory SaaS for pharmacies. FEFO-driven selling + multi-tenancy.
+//
+// Conventions:
+//   • Prisma models are PascalCase, mapped to snake_case tables via @@map.
+//   • Fields are camelCase in the client, mapped to snake_case columns via @map.
+//   • UUID primary keys, DB-generated with gen_random_uuid() (pgcrypto).
+//   • Money is Decimal(12,2); timestamps are timestamptz(6).
+//   • Every tenant-scoped table carries shop_id and is indexed on it.
+//
+// Some production objects cannot be expressed in this schema and live in the
+// SQL migration instead: CHECK constraints, the updated_at trigger, the partial
+// FEFO index, and (optionally) Row-Level Security. See migrations/ and rls.sql.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums  (native PostgreSQL enum types, snake_case via @@map)
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  central_admin
+  shop_owner
+  shop_staff
+
+  @@map("user_role")
+}
+
+enum ShopStatus {
+  pending
+  approved
+  rejected
+
+  @@map("shop_status")
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  canceled
+
+  @@map("subscription_status")
+}
+
+enum AiLogStatus {
+  success
+  blocked
+  error
+
+  @@map("ai_log_status")
+}
+
+enum BillStatus {
+  completed
+  voided
+  returned
+  partially_returned
+
+  @@map("bill_status")
+}
+
+enum StockMovementReason {
+  sale
+  void
+  return
+  adjustment
+
+  @@map("stock_movement_reason")
+}
+
+// ---------------------------------------------------------------------------
+// users — everyone who logs in. central_admin has shopId = null.
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String?  @map("shop_id") @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  role         UserRole
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // The shop this user belongs to (staff/owner). Deleting a shop removes its users.
+  shop          Shop?          @relation("ShopMembers", fields: [shopId], references: [id], onDelete: Cascade)
+  // The shop this user owns (1:1, owner_user_id is unique on shops).
+  ownedShop     Shop?          @relation("ShopOwner")
+  // Shops this (central_admin) user has verified.
+  verifiedShops Shop[]         @relation("ShopVerifier")
+  bills          Bill[]
+  refreshTokens  RefreshToken[]
+  aiQueryLogs    AiQueryLog[]
+  stockMovements StockMovement[]
+  billReturns    BillReturn[]
+
+  @@index([shopId])
+  @@index([role])
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// shops — one row per pharmacy. THE TENANT. Holds license + verification.
+// ---------------------------------------------------------------------------
+
+model Shop {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  ownerUserId        String             @unique @map("owner_user_id") @db.Uuid
+  address            String?
+  phone              String?
+  licenseNumber      String             @unique @map("license_number")
+  licenseDocUrl      String?            @map("license_doc_url")
+  status             ShopStatus         @default(pending)
+  verifiedById       String?            @map("verified_by") @db.Uuid
+  verifiedAt         DateTime?          @map("verified_at") @db.Timestamptz(6)
+  rejectionReason    String?            @map("rejection_reason")
+  planId             String?            @map("plan_id") @db.Uuid
+  subscriptionStatus SubscriptionStatus @default(trialing) @map("subscription_status")
+  trialEndsAt        DateTime?          @map("trial_ends_at") @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  owner       User              @relation("ShopOwner", fields: [ownerUserId], references: [id], onDelete: NoAction)
+  verifiedBy  User?             @relation("ShopVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  plan        SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  members     User[]            @relation("ShopMembers")
+  dealers     Dealer[]
+  medicines   Medicine[]
+  batches     Batch[]
+  bills           Bill[]
+  billItems       BillItem[]
+  aiQueryLogs     AiQueryLog[]
+  stockMovements  StockMovement[]
+  billReturns     BillReturn[]
+  idempotencyKeys IdempotencyKey[]
+
+  @@index([status])
+  @@index([subscriptionStatus])
+  @@index([planId])
+  @@index([verifiedById])
+  @@map("shops")
+}
+
+// ---------------------------------------------------------------------------
+// dealers — suppliers each shop buys from.
+// ---------------------------------------------------------------------------
+
+model Dealer {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String   @map("shop_id") @db.Uuid
+  name        String
+  contactName String?  @map("contact_name")
+  phone       String?
+  email       String?
+  address     String?
+  taxId       String?  @map("tax_id")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  shop    Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  batches Batch[]
+
+  @@unique([shopId, name])
+  @@index([shopId])
+  @@map("dealers")
+}
+
+// ---------------------------------------------------------------------------
+// medicines — per-shop catalog of medicine TYPES (not physical stock).
+// ---------------------------------------------------------------------------
+
+model Medicine {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String   @map("shop_id") @db.Uuid
+  name         String
+  genericName  String?  @map("generic_name")
+  manufacturer String?
+  category     String?
+  form         String?
+  strength     String?
+  unit         String   @default("unit")
+  hsnCode      String?  @map("hsn_code")
+  reorderLevel Int      @default(0) @map("reorder_level")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  batches        Batch[]
+  billItems      BillItem[]
+  stockMovements StockMovement[]
+
+  @@unique([shopId, name, strength, form])
+  @@index([shopId])
+  @@map("medicines")
+}
+
+// ---------------------------------------------------------------------------
+// batches — physical stock with expiry. DRIVES FEFO.
+// ---------------------------------------------------------------------------
+
+model Batch {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId            String   @map("shop_id") @db.Uuid
+  medicineId        String   @map("medicine_id") @db.Uuid
+  dealerId          String?  @map("dealer_id") @db.Uuid
+  batchNumber       String   @map("batch_number")
+  expiryDate        DateTime @map("expiry_date") @db.Date
+  quantityReceived  Int      @map("quantity_received")
+  quantityRemaining Int      @map("quantity_remaining")
+  costPrice         Decimal  @default(0) @map("cost_price") @db.Decimal(12, 2)
+  mrp               Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  shop           Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  medicine       Medicine        @relation(fields: [medicineId], references: [id], onDelete: NoAction)
+  dealer         Dealer?         @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+  billItems      BillItem[]
+  stockMovements StockMovement[]
+
+  @@unique([shopId, medicineId, batchNumber])
+  @@index([shopId])
+  @@index([medicineId])
+  @@index([dealerId])
+  // FEFO-serving composite index. A *partial* version (WHERE quantity_remaining > 0)
+  // is added in the SQL migration for extra efficiency — Prisma can't express partials.
+  @@index([shopId, medicineId, expiryDate])
+  @@map("batches")
+}
+
+// ---------------------------------------------------------------------------
+// bills — one per sale. Immutable ledger: created_at only, never updated.
+// ---------------------------------------------------------------------------
+
+model Bill {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId        String   @map("shop_id") @db.Uuid
+  billNumber    Int      @map("bill_number") // per-shop sequence (unique within shop)
+  customerName  String?  @map("customer_name")
+  customerPhone String?  @map("customer_phone")
+  soldById      String   @map("sold_by") @db.Uuid
+  subtotal      Decimal  @db.Decimal(12, 2)
+  discount      Decimal  @default(0) @db.Decimal(12, 2)
+  tax           Decimal    @default(0) @db.Decimal(12, 2)
+  gstRate       Decimal    @default(0) @map("gst_rate") @db.Decimal(5, 2)
+  total         Decimal    @db.Decimal(12, 2)
+  paymentMethod String     @default("cash") @map("payment_method")
+  status        BillStatus @default(completed)
+  voidedAt      DateTime?  @map("voided_at") @db.Timestamptz(6)
+  voidReason    String?    @map("void_reason")
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shop            Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  soldBy          User             @relation(fields: [soldById], references: [id], onDelete: NoAction)
+  items           BillItem[]
+  stockMovements  StockMovement[]
+  returns         BillReturn[]
+  idempotencyKeys IdempotencyKey[]
+
+  @@unique([shopId, billNumber])
+  @@index([shopId, createdAt])
+  @@index([shopId, status])
+  @@index([soldById])
+  @@map("bills")
+}
+
+// ---------------------------------------------------------------------------
+// bill_items — sale line items, each tied to the EXACT batch consumed (FEFO).
+// ---------------------------------------------------------------------------
+
+model BillItem {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  billId     String   @map("bill_id") @db.Uuid
+  shopId     String   @map("shop_id") @db.Uuid
+  batchId    String   @map("batch_id") @db.Uuid
+  medicineId String   @map("medicine_id") @db.Uuid
+  quantity         Int
+  returnedQuantity Int      @default(0) @map("returned_quantity")
+  unitPrice        Decimal  @map("unit_price") @db.Decimal(12, 2)
+  lineTotal        Decimal  @map("line_total") @db.Decimal(12, 2)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  bill           Bill             @relation(fields: [billId], references: [id], onDelete: Cascade)
+  shop           Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  batch          Batch            @relation(fields: [batchId], references: [id], onDelete: NoAction)
+  medicine       Medicine         @relation(fields: [medicineId], references: [id], onDelete: NoAction)
+  stockMovements StockMovement[]
+  returnItems    BillReturnItem[]
+
+  @@index([billId])
+  @@index([batchId])
+  @@index([medicineId])
+  @@index([shopId])
+  @@map("bill_items")
+}
+
+// ---------------------------------------------------------------------------
+// ai_query_logs — audit of every GenAI NL->SQL request. Append-only.
+// ---------------------------------------------------------------------------
+
+model AiQueryLog {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String      @map("shop_id") @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  question     String
+  generatedSql String?     @map("generated_sql")
+  status       AiLogStatus
+  rowCount     Int?        @map("row_count")
+  errorMessage String?     @map("error_message")
+  model        String?
+  latencyMs    Int?        @map("latency_ms")
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([shopId, createdAt])
+  @@index([userId])
+  @@index([status])
+  @@map("ai_query_logs")
+}
+
+// ---------------------------------------------------------------------------
+// subscription_plans — global (NOT tenant-scoped). Managed by the central team.
+// ---------------------------------------------------------------------------
+
+model SubscriptionPlan {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @unique
+  price           Decimal  @default(0) @db.Decimal(12, 2)
+  billingInterval String   @default("month") @map("billing_interval")
+  maxUsers        Int?     @map("max_users") // null = unlimited
+  maxMedicines    Int?     @map("max_medicines") // null = unlimited
+  features        Json     @default("{}")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  shops Shop[]
+
+  @@map("subscription_plans")
+}
+
+// ---------------------------------------------------------------------------
+// refresh_tokens — rotating refresh-token store. Only the HASH is persisted.
+// ---------------------------------------------------------------------------
+
+model RefreshToken {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  familyId     String    @default(dbgenerated("gen_random_uuid()")) @map("family_id") @db.Uuid
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(6)
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  userAgent    String?   @map("user_agent")
+  ipAddress    String?   @map("ip_address")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ---------------------------------------------------------------------------
+// stock_movements — append-only inventory ledger (sale / void / return / adjust).
+// ---------------------------------------------------------------------------
+
+model StockMovement {
+  id          String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String              @map("shop_id") @db.Uuid
+  batchId     String              @map("batch_id") @db.Uuid
+  medicineId  String              @map("medicine_id") @db.Uuid
+  billId      String?             @map("bill_id") @db.Uuid
+  billItemId  String?             @map("bill_item_id") @db.Uuid
+  change      Int // signed: negative for a sale, positive for void/return restock
+  reason      StockMovementReason
+  note        String?
+  createdById String?             @map("created_by") @db.Uuid
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shop      Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  batch     Batch     @relation(fields: [batchId], references: [id], onDelete: NoAction)
+  medicine  Medicine  @relation(fields: [medicineId], references: [id], onDelete: NoAction)
+  bill      Bill?     @relation(fields: [billId], references: [id], onDelete: SetNull)
+  billItem  BillItem? @relation(fields: [billItemId], references: [id], onDelete: SetNull)
+  createdBy User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([shopId, createdAt])
+  @@index([batchId])
+  @@index([billId])
+  @@map("stock_movements")
+}
+
+// ---------------------------------------------------------------------------
+// bill_returns / bill_return_items — customer returns booked against a bill.
+// ---------------------------------------------------------------------------
+
+model BillReturn {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String   @map("shop_id") @db.Uuid
+  billId      String   @map("bill_id") @db.Uuid
+  reason      String?
+  totalRefund Decimal  @map("total_refund") @db.Decimal(12, 2)
+  createdById String   @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  shop      Shop             @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  bill      Bill             @relation(fields: [billId], references: [id], onDelete: Cascade)
+  createdBy User             @relation(fields: [createdById], references: [id], onDelete: NoAction)
+  items     BillReturnItem[]
+
+  @@index([shopId, createdAt])
+  @@index([billId])
+  @@map("bill_returns")
+}
+
+model BillReturnItem {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  returnId   String  @map("return_id") @db.Uuid
+  billItemId String  @map("bill_item_id") @db.Uuid
+  batchId    String  @map("batch_id") @db.Uuid
+  medicineId String  @map("medicine_id") @db.Uuid
+  quantity   Int
+  unitPrice  Decimal @map("unit_price") @db.Decimal(12, 2)
+  lineRefund Decimal @map("line_refund") @db.Decimal(12, 2)
+
+  return   BillReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  billItem BillItem   @relation(fields: [billItemId], references: [id], onDelete: NoAction)
+
+  @@index([returnId])
+  @@index([billItemId])
+  @@map("bill_return_items")
+}
+
+// ---------------------------------------------------------------------------
+// idempotency_keys — dedupe POST /bills so a retried request never double-sells.
+// ---------------------------------------------------------------------------
+
+model IdempotencyKey {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId      String   @map("shop_id") @db.Uuid
+  key         String
+  requestHash String   @map("request_hash")
+  billId      String?  @map("bill_id") @db.Uuid
+  status      String   @default("in_progress")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz(6)
+
+  shop Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  bill Bill? @relation(fields: [billId], references: [id], onDelete: SetNull)
+
+  @@unique([shopId, key])
+  @@index([shopId])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
