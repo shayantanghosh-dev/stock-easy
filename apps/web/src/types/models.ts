@@ -7,12 +7,34 @@ export type BillStatus = "completed" | "voided" | "returned" | "partially_return
 export type StockMovementReason = "sale" | "void" | "return" | "adjustment";
 export type AiLogStatus = "success" | "blocked" | "error";
 
+export type DocumentKind = "aadhaar" | "pan" | "license" | "gst" | "other";
+
+/** Verification document metadata (bytes are never sent in JSON). */
+export interface ShopDocument {
+  id: string;
+  shopId: string;
+  kind: DocumentKind;
+  originalName: string;
+  mimeType: string;
+  byteSize: number;
+  uploadedById: string | null;
+  createdAt: string;
+}
+
 export interface Shop {
   id: string;
   name: string;
   ownerUserId: string;
   address: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
   phone: string | null;
+  gstNumber: string | null;
+  // Sensitive KYC identifiers. Masked for owner/staff (e.g. "XXXX XXXX 1234");
+  // full values only on central-admin verification responses.
+  aadhaarNumber: string | null;
+  panNumber: string | null;
   licenseNumber: string;
   licenseDocUrl: string | null;
   status: ShopStatus;

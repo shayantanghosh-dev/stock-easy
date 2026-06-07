@@ -24,6 +24,7 @@ export function getAiProvider(): AiProvider {
 }
 
 export type {
+  AiChatMessage,
   AiProvider,
   AiToolCall,
   AiToolChoice,

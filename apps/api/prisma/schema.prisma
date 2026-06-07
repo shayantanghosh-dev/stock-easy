@@ -61,6 +61,16 @@ enum AiLogStatus {
   @@map("ai_log_status")
 }
 
+enum DocumentKind {
+  aadhaar
+  pan
+  license
+  gst
+  other
+
+  @@map("document_kind")
+}
+
 enum BillStatus {
   completed
   voided
@@ -105,6 +115,7 @@ model User {
   aiQueryLogs    AiQueryLog[]
   stockMovements StockMovement[]
   billReturns    BillReturn[]
+  uploadedDocuments ShopDocument[]
 
   @@index([shopId])
   @@index([role])
@@ -120,7 +131,15 @@ model Shop {
   name               String
   ownerUserId        String             @unique @map("owner_user_id") @db.Uuid
   address            String?
+  city               String?
+  state              String?
+  postalCode         String?            @map("postal_code")
   phone              String?
+  gstNumber          String?            @map("gst_number")
+  // KYC identifiers (sensitive PII — masked in owner/staff-facing responses,
+  // unmasked only on central-admin verification endpoints).
+  aadhaarNumber      String?            @map("aadhaar_number")
+  panNumber          String?            @map("pan_number")
   licenseNumber      String             @unique @map("license_number")
   licenseDocUrl      String?            @map("license_doc_url")
   status             ShopStatus         @default(pending)
@@ -146,6 +165,7 @@ model Shop {
   stockMovements  StockMovement[]
   billReturns     BillReturn[]
   idempotencyKeys IdempotencyKey[]
+  documents       ShopDocument[]
 
   @@index([status])
   @@index([subscriptionStatus])
@@ -470,4 +490,32 @@ model IdempotencyKey {
   @@index([shopId])
   @@index([expiresAt])
   @@map("idempotency_keys")
+}
+
+// ---------------------------------------------------------------------------
+// shop_documents — KYC / verification files (Aadhaar, PAN, license, ...).
+// Bytes are stored in Postgres (bytea) so there is no external object store to
+// operate and nothing is ever served from a public URL: every download goes
+// through an authenticated, RBAC-gated, tenant-scoped endpoint. Kept off the
+// hot `shops` row so shop reads never pull binary blobs.
+// ---------------------------------------------------------------------------
+
+model ShopDocument {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  shopId       String       @map("shop_id") @db.Uuid
+  kind         DocumentKind
+  originalName String       @map("original_name")
+  mimeType     String       @map("mime_type")
+  byteSize     Int          @map("byte_size")
+  data         Bytes
+  uploadedById String?      @map("uploaded_by") @db.Uuid
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  shop       Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  uploadedBy User? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([shopId])
+  @@index([shopId, kind])
+  @@map("shop_documents")
 }

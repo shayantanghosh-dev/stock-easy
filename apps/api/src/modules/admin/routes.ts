@@ -6,7 +6,7 @@ import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { uuidParamSchema } from '../../utils/schemas';
 import { adminController } from './controller';
-import { listShopsQuerySchema, rejectShopSchema } from './validators';
+import { listShopsQuerySchema, rejectShopSchema, shopDocumentParamSchema } from './validators';
 
 const router = Router();
 
@@ -20,6 +20,19 @@ router.post(
   validate({ params: uuidParamSchema, body: rejectShopSchema }),
   asyncHandler(adminController.rejectShop),
 );
+
+// KYC document review — list metadata + stream a single document's bytes.
+router.get(
+  '/shops/:id/documents',
+  validate({ params: uuidParamSchema }),
+  asyncHandler(adminController.listShopDocuments),
+);
+router.get(
+  '/shops/:id/documents/:docId',
+  validate({ params: shopDocumentParamSchema }),
+  asyncHandler(adminController.downloadShopDocument),
+);
+
 router.get('/analytics', asyncHandler(adminController.analytics));
 
 export const adminRoutes = router;

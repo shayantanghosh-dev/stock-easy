@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { aadhaarField, gstField, panField, postalCodeField } from '../../utils/kyc';
 
 export const registerSchema = z.object({
   owner: z.object({
@@ -9,8 +10,17 @@ export const registerSchema = z.object({
   shop: z.object({
     name: z.string().min(2).max(160),
     licenseNumber: z.string().min(3).max(80),
-    address: z.string().max(300).optional(),
+    // Business / KYC details collected at registration. address/city/state/
+    // postalCode and Aadhaar/PAN are required for verification; gstNumber is
+    // optional (not every pharmacy is GST-registered).
+    address: z.string().min(3).max(300),
+    city: z.string().min(1).max(120),
+    state: z.string().min(1).max(120),
+    postalCode: postalCodeField,
     phone: z.string().max(30).optional(),
+    gstNumber: gstField.optional(),
+    aadhaarNumber: aadhaarField,
+    panNumber: panField,
   }),
 });
 

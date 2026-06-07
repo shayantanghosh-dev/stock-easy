@@ -8,6 +8,7 @@ import type { ShopStatus } from "@/types/models";
 import { useAdminShops, useApproveShop } from "./hooks";
 import { AdminShopsTable } from "./admin-shops-table";
 import { RejectShopDialog } from "./reject-shop-dialog";
+import { ReviewKycDialog } from "./review-kyc-dialog";
 import type { ShopWithOwner } from "./types";
 
 type Filter = "all" | ShopStatus;
@@ -22,6 +23,7 @@ export function TenantsView() {
   });
   const approve = useApproveShop();
   const [rejecting, setRejecting] = useState<ShopWithOwner | null>(null);
+  const [reviewing, setReviewing] = useState<ShopWithOwner | null>(null);
 
   const onFilterChange = (value: string) => {
     setFilter(value as Filter);
@@ -49,6 +51,7 @@ export function TenantsView() {
         onRetry={() => refetch()}
         onApprove={(s) => approve.mutate(s.id)}
         onReject={(s) => setRejecting(s)}
+        onReview={(s) => setReviewing(s)}
         approvingId={approve.isPending ? (approve.variables as string) : undefined}
         emptyTitle="No pharmacies"
         emptyDescription="No pharmacies match this filter."
@@ -57,6 +60,12 @@ export function TenantsView() {
       <Pagination meta={data?.meta} onPageChange={setPage} />
 
       <RejectShopDialog open={Boolean(rejecting)} onOpenChange={(o) => !o && setRejecting(null)} shop={rejecting} />
+      <ReviewKycDialog
+        open={Boolean(reviewing)}
+        onOpenChange={(o) => !o && setReviewing(null)}
+        shop={reviewing}
+        onReject={(s) => setRejecting(s)}
+      />
     </div>
   );
 }

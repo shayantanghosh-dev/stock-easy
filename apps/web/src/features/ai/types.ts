@@ -1,6 +1,12 @@
 /** The fixed set of safe reports the assistant may invoke (mirrors the backend). */
 export type AiToolName = "expiring_soon" | "low_stock" | "top_selling" | "dead_stock" | "sales_summary";
 
+/** A prior conversation message sent for multi-turn follow-up context. */
+export interface AiChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 /** Response from POST /ai/query. */
 export interface AiAnswer {
   /** Natural-language summary produced by the model. */

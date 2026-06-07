@@ -1,10 +1,19 @@
 import { BadRequestError, NotFoundError } from '../../utils/AppError';
+import { EXPIRY_SOON_DAYS } from '../../config/constants';
 import { buildPageMeta, getPagination } from '../../utils/pagination';
+import { startOfToday } from '../../utils/date';
 import { dealerRepository } from '../dealers/repository';
 import { medicineRepository } from '../medicines/repository';
 import { batchRepository } from './repository';
 import { allocateFefo } from './fefo';
-import type { BatchListResult, FefoPreviewResult } from './types';
+import type { BatchListResult, FefoPreviewResult, SellableBatchView } from './types';
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Whole days from today (local midnight) until a date; never negative here. */
+function daysUntil(date: Date): number {
+  return Math.max(0, Math.round((date.getTime() - startOfToday().getTime()) / MS_PER_DAY));
+}
 import type { CreateBatchInput, FefoPreviewQuery, ListBatchesQuery, UpdateBatchInput } from './validators';
 
 class BatchService {
@@ -86,12 +95,33 @@ class BatchService {
     }
     const batches = await batchRepository.findSellable(shopId, query.medicineId);
     const { allocations, fulfilled } = allocateFefo(batches, query.quantity);
+
+    // Decorate every sellable batch (FEFO order) so the POS can show which one
+    // to sell first, its expiry/stock, and any expiry risk — without forcing a
+    // manual batch choice.
+    const allocatedByBatch = new Map(allocations.map((a) => [a.batchId, a.quantity]));
+    const sellable: SellableBatchView[] = batches.map((b, index) => {
+      const daysToExpiry = daysUntil(b.expiryDate);
+      return {
+        batchId: b.id,
+        batchNumber: b.batchNumber,
+        expiryDate: b.expiryDate,
+        quantityRemaining: b.quantityRemaining,
+        daysToExpiry,
+        expiringSoon: daysToExpiry <= EXPIRY_SOON_DAYS,
+        fefoRank: index + 1,
+        allocatedQuantity: allocatedByBatch.get(b.id) ?? 0,
+        recommended: index === 0,
+      };
+    });
+
     return {
       medicineId: query.medicineId,
       requested: query.quantity,
       fulfillable: fulfilled,
       sufficient: fulfilled >= query.quantity,
       allocations,
+      batches: sellable,
     };
   }
 }

@@ -39,6 +39,26 @@ class AdminService {
     return adminRepository.platformStats();
   }
 
+  // ---- KYC document review (central_admin, cross-tenant) --------------------
+
+  async listShopDocuments(shopId: string) {
+    await this.ensureShop(shopId);
+    return shopRepository.listDocuments(shopId);
+  }
+
+  async getShopDocument(shopId: string, docId: string) {
+    const doc = await shopRepository.findDocument(shopId, docId);
+    if (!doc) {
+      throw new NotFoundError('Document not found');
+    }
+    return {
+      buffer: Buffer.from(doc.data),
+      mimeType: doc.mimeType,
+      originalName: doc.originalName,
+      byteSize: doc.byteSize,
+    };
+  }
+
   private async ensureShop(shopId: string) {
     const shop = await shopRepository.findByIdBasic(shopId);
     if (!shop) {

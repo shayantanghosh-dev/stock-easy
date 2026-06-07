@@ -11,6 +11,7 @@ export const queryKeys = {
   },
   shop: {
     me: ["shop", "me"] as const,
+    documents: ["shop", "documents"] as const,
   },
   medicines: {
     all: ["medicines"] as const,
@@ -54,6 +55,7 @@ export const queryKeys = {
   admin: {
     all: ["admin"] as const,
     shops: (params: unknown) => ["admin", "shops", params] as const,
+    shopDocuments: (shopId: string) => ["admin", "shop-documents", shopId] as const,
     analytics: ["admin", "analytics"] as const,
   },
 } as const;

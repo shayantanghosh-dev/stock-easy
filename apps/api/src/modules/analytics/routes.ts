@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserRole } from '@prisma/client';
 import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
+import { requireApprovedShop } from '../../middleware/requireApprovedShop';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { analyticsController } from './controller';
@@ -9,7 +10,8 @@ import { daysQuerySchema, rangeQuerySchema, topMedicinesQuerySchema } from './va
 
 const router = Router();
 
-router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff));
+// Analytics is operational data — only for approved shop members.
+router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff), requireApprovedShop);
 
 router.get('/dashboard', asyncHandler(analyticsController.dashboard));
 router.get('/expiring-soon', validate({ query: daysQuerySchema }), asyncHandler(analyticsController.expiringSoon));

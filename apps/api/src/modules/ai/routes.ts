@@ -11,11 +11,11 @@ import { aiLogsQuerySchema, aiQuerySchema } from './validators';
 
 const router = Router();
 
-router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff));
+// The AI assistant operates on the shop's live data — approved shops only.
+router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff), requireApprovedShop);
 
 router.post(
   '/query',
-  requireApprovedShop,
   aiLimiter,
   validate({ body: aiQuerySchema }),
   asyncHandler(aiController.query),

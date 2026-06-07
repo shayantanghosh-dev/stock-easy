@@ -4,6 +4,26 @@ export const shopDetailsSchema = z.object({
   name: z.string().min(2, "Name is too short").max(160),
   phone: z.string().max(30).optional().or(z.literal("")),
   address: z.string().max(300).optional().or(z.literal("")),
+  city: z.string().max(120).optional().or(z.literal("")),
+  state: z.string().max(120).optional().or(z.literal("")),
+  postalCode: z
+    .string()
+    .regex(/^\d{6}$/, "Postal code must be 6 digits")
+    .optional()
+    .or(z.literal("")),
+  gstNumber: z.string().max(20, "GSTIN is too long").optional().or(z.literal("")),
+  // Write-only: leave blank to keep the current value; only a new value updates.
+  aadhaarNumber: z
+    .string()
+    .transform((v) => v.replace(/\s+/g, ""))
+    .pipe(z.string().regex(/^\d{12}$/, "Aadhaar must be 12 digits"))
+    .optional()
+    .or(z.literal("")),
+  panNumber: z
+    .string()
+    .regex(/^[A-Za-z]{5}[0-9]{4}[A-Za-z]$/, "Invalid PAN (e.g. ABCDE1234F)")
+    .optional()
+    .or(z.literal("")),
 });
 export type ShopDetailsValues = z.infer<typeof shopDetailsSchema>;
 

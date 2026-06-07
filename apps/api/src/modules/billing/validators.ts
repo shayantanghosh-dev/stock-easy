@@ -26,6 +26,8 @@ export const createSaleSchema = z.object({
 export const listBillsQuerySchema = paginationQuerySchema.extend({
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
+  // Free-text lookup: bill number, bill id (uuid), customer name or phone.
+  search: z.string().trim().max(120).optional(),
 });
 
 export const voidBillSchema = z.object({

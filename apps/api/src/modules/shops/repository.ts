@@ -37,6 +37,66 @@ export class ShopRepository {
   count(status?: ShopStatus) {
     return prisma.shop.count({ where: status ? { status } : {} });
   }
+
+  // ---- verification documents ----------------------------------------------
+  // Metadata-only select used everywhere a list/preview is shown — the `data`
+  // bytea is NEVER selected unless a single document is being downloaded.
+
+  private static readonly DOC_META_SELECT = {
+    id: true,
+    shopId: true,
+    kind: true,
+    originalName: true,
+    mimeType: true,
+    byteSize: true,
+    uploadedById: true,
+    createdAt: true,
+  } satisfies Prisma.ShopDocumentSelect;
+
+  listDocuments(shopId: string) {
+    return prisma.shopDocument.findMany({
+      where: { shopId },
+      orderBy: { createdAt: 'desc' },
+      select: ShopRepository.DOC_META_SELECT,
+    });
+  }
+
+  /** Full row incl. bytes — only for the authenticated download path. */
+  findDocument(shopId: string, id: string) {
+    return prisma.shopDocument.findFirst({ where: { id, shopId } });
+  }
+
+  createDocument(data: {
+    shopId: string;
+    kind: Prisma.ShopDocumentCreateInput['kind'];
+    originalName: string;
+    mimeType: string;
+    byteSize: number;
+    data: Uint8Array<ArrayBuffer>;
+    uploadedById: string | null;
+  }) {
+    return prisma.shopDocument.create({
+      data: {
+        shopId: data.shopId,
+        kind: data.kind,
+        originalName: data.originalName,
+        mimeType: data.mimeType,
+        byteSize: data.byteSize,
+        data: data.data,
+        uploadedById: data.uploadedById,
+      },
+      select: ShopRepository.DOC_META_SELECT,
+    });
+  }
+
+  async deleteDocument(shopId: string, id: string): Promise<boolean> {
+    const res = await prisma.shopDocument.deleteMany({ where: { id, shopId } });
+    return res.count > 0;
+  }
+
+  countDocuments(shopId: string) {
+    return prisma.shopDocument.count({ where: { shopId } });
+  }
 }
 
 export const shopRepository = new ShopRepository();

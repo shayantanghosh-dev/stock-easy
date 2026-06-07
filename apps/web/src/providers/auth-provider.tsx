@@ -12,6 +12,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { refreshAccessToken, tokenStore } from "@/services/api";
 import { authService } from "@/services/auth.service";
+import { clearAiChat } from "@/features/ai/storage";
 import type { LoginPayload, MeProfile, RegisterPayload, UserRole } from "@/types/auth";
 
 export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -42,7 +43,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return profile;
   }, []);
 
+  // Track the latest user id so clearSession can purge per-user local data even
+  // though it doesn't depend on `user` (avoids a stale closure).
+  const userIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
+
   const clearSession = useCallback(() => {
+    // Purge the per-user AI conversation on sign-out (privacy on shared devices).
+    if (userIdRef.current) clearAiChat(userIdRef.current);
     tokenStore.clear();
     setUser(null);
     setStatus("unauthenticated");

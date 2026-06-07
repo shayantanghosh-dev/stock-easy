@@ -3,6 +3,8 @@ import { prisma } from '../../lib/prisma';
 import { IDEMPOTENCY_TTL_HOURS } from '../../config/constants';
 import type { LockedBatchRow } from './types';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Billing data access. Mutating methods take a Prisma.TransactionClient so they
  * run inside the sale/void/return transaction; read methods default to the
@@ -103,20 +105,40 @@ export class BillingRepository {
     return db.bill.findFirst({ where: { id: billId, shopId }, include: { items: true } });
   }
 
-  private whereBills(shopId: string, from?: Date, to?: Date): Prisma.BillWhereInput {
+  private whereBills(
+    shopId: string,
+    params: { from?: Date; to?: Date; search?: string } = {},
+  ): Prisma.BillWhereInput {
     const where: Prisma.BillWhereInput = { shopId };
-    if (from || to) {
+    if (params.from || params.to) {
       const createdAt: Prisma.DateTimeFilter = {};
-      if (from) createdAt.gte = from;
-      if (to) createdAt.lte = to;
+      if (params.from) createdAt.gte = params.from;
+      if (params.to) createdAt.lte = params.to;
       where.createdAt = createdAt;
+    }
+
+    const search = params.search?.trim();
+    if (search) {
+      const or: Prisma.BillWhereInput[] = [
+        { customerName: { contains: search, mode: 'insensitive' } },
+        { customerPhone: { contains: search } },
+      ];
+      // A bare integer (optionally "#123") matches the per-shop bill number.
+      const numeric = Number(search.replace(/^#/, ''));
+      if (Number.isInteger(numeric) && numeric > 0) or.push({ billNumber: numeric });
+      // A full UUID matches the bill id directly.
+      if (UUID_RE.test(search)) or.push({ id: search });
+      where.OR = or;
     }
     return where;
   }
 
-  listBills(shopId: string, params: { skip: number; take: number; from?: Date; to?: Date }) {
+  listBills(
+    shopId: string,
+    params: { skip: number; take: number; from?: Date; to?: Date; search?: string },
+  ) {
     return prisma.bill.findMany({
-      where: this.whereBills(shopId, params.from, params.to),
+      where: this.whereBills(shopId, params),
       skip: params.skip,
       take: params.take,
       orderBy: { createdAt: 'desc' },
@@ -124,8 +146,8 @@ export class BillingRepository {
     });
   }
 
-  countBills(shopId: string, params: { from?: Date; to?: Date }) {
-    return prisma.bill.count({ where: this.whereBills(shopId, params.from, params.to) });
+  countBills(shopId: string, params: { from?: Date; to?: Date; search?: string }) {
+    return prisma.bill.count({ where: this.whereBills(shopId, params) });
   }
 
   /** Full bill detail for GET /bills/:id (items + relations + returns). */

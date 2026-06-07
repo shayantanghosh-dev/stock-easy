@@ -49,8 +49,14 @@ export function useRegisterSubmit() {
         shop: {
           name: values.shopName,
           licenseNumber: values.licenseNumber,
-          address: values.address || undefined,
+          address: values.address,
+          city: values.city,
+          state: values.state,
+          postalCode: values.postalCode,
           phone: values.phone || undefined,
+          gstNumber: values.gstNumber || undefined,
+          aadhaarNumber: values.aadhaarNumber,
+          panNumber: values.panNumber,
         },
       });
       toast.success("Pharmacy account created — welcome to Stock Easy!");

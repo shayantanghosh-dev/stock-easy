@@ -21,6 +21,15 @@ export function usePlatformStats() {
   });
 }
 
+/** KYC documents for a shop under review (central_admin). */
+export function useShopDocuments(shopId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.admin.shopDocuments(shopId ?? ""),
+    queryFn: () => adminService.listShopDocuments(shopId as string),
+    enabled: Boolean(shopId),
+  });
+}
+
 function useInvalidateAdmin() {
   const qc = useQueryClient();
   return () => {

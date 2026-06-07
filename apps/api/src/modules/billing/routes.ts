@@ -11,23 +11,23 @@ import { createSaleSchema, listBillsQuerySchema, returnBillSchema, voidBillSchem
 
 const router = Router();
 
-router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff));
+// All billing (selling and the sales ledger) is gated on shop approval, so an
+// unapproved pharmacy can neither sell nor browse bills.
+router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff), requireApprovedShop);
 
-// Selling requires an approved shop and an Idempotency-Key header.
-router.post('/', requireApprovedShop, validate({ body: createSaleSchema }), asyncHandler(billingController.create));
+// Selling additionally requires an Idempotency-Key header (enforced in the controller).
+router.post('/', validate({ body: createSaleSchema }), asyncHandler(billingController.create));
 router.get('/', validate({ query: listBillsQuerySchema }), asyncHandler(billingController.list));
 router.get('/:id', validate({ params: uuidParamSchema }), asyncHandler(billingController.get));
 
 // Returns are allowed for owner + staff; voids are owner-only (more destructive).
 router.post(
   '/:id/return',
-  requireApprovedShop,
   validate({ params: uuidParamSchema, body: returnBillSchema }),
   asyncHandler(billingController.returnSale),
 );
 router.post(
   '/:id/void',
-  requireApprovedShop,
   authorize(UserRole.shop_owner),
   validate({ params: uuidParamSchema, body: voidBillSchema }),
   asyncHandler(billingController.voidBill),

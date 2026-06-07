@@ -11,7 +11,8 @@ import { FormField } from "@/components/shared/form-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ShopWithPlan } from "@/services/shops.service";
+import type { ShopWithPlan, UpdateShopPayload } from "@/services/shops.service";
+import { KycDocuments } from "./kyc-documents";
 import { useCreateStaff, useMyShop, useSetLicense, useUpdateShop } from "./hooks";
 import {
   licenseSchema,
@@ -61,6 +62,8 @@ export function SettingsView() {
         <LicenseForm shop={shop} />
       </div>
 
+      <KycDocuments />
+
       <StaffForm />
     </div>
   );
@@ -74,12 +77,35 @@ function ShopDetailsForm({ shop }: { shop: ShopWithPlan }) {
     formState: { errors, isDirty },
   } = useForm<ShopDetailsValues>({
     resolver: zodResolver(shopDetailsSchema),
-    defaultValues: { name: shop.name, phone: shop.phone ?? "", address: shop.address ?? "" },
+    defaultValues: {
+      name: shop.name,
+      phone: shop.phone ?? "",
+      address: shop.address ?? "",
+      city: shop.city ?? "",
+      state: shop.state ?? "",
+      postalCode: shop.postalCode ?? "",
+      gstNumber: shop.gstNumber ?? "",
+      // Aadhaar/PAN are write-only — never prefill the masked value.
+      aadhaarNumber: "",
+      panNumber: "",
+    },
   });
 
-  const onSubmit = handleSubmit((values) =>
-    update.mutate({ name: values.name, phone: values.phone || undefined, address: values.address || undefined }),
-  );
+  const onSubmit = handleSubmit((values) => {
+    const payload: UpdateShopPayload = {
+      name: values.name,
+      phone: values.phone || undefined,
+      address: values.address || undefined,
+      city: values.city || undefined,
+      state: values.state || undefined,
+      postalCode: values.postalCode || undefined,
+      gstNumber: values.gstNumber || undefined,
+    };
+    // Only send Aadhaar/PAN when the owner typed a fresh value (masked on read).
+    if (values.aadhaarNumber) payload.aadhaarNumber = values.aadhaarNumber;
+    if (values.panNumber) payload.panNumber = values.panNumber;
+    update.mutate(payload);
+  });
 
   return (
     <Card>
@@ -100,6 +126,49 @@ function ShopDetailsForm({ shop }: { shop: ShopWithPlan }) {
           <FormField label="Address" htmlFor="address" error={errors.address?.message}>
             <Input id="address" {...register("address")} />
           </FormField>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormField label="City" htmlFor="city" error={errors.city?.message}>
+              <Input id="city" {...register("city")} />
+            </FormField>
+            <FormField label="State" htmlFor="state" error={errors.state?.message}>
+              <Input id="state" {...register("state")} />
+            </FormField>
+            <FormField label="Postal code" htmlFor="postalCode" error={errors.postalCode?.message}>
+              <Input id="postalCode" inputMode="numeric" placeholder="560001" {...register("postalCode")} />
+            </FormField>
+          </div>
+          <FormField
+            label="GST number"
+            htmlFor="gstNumber"
+            error={errors.gstNumber?.message}
+            hint="Printed on invoices when present (GSTIN)."
+          >
+            <Input id="gstNumber" placeholder="22AAAAA0000A1Z5" {...register("gstNumber")} />
+          </FormField>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              label="Aadhaar number"
+              htmlFor="aadhaarNumber"
+              error={errors.aadhaarNumber?.message}
+              hint={shop.aadhaarNumber ? `On file: ${shop.aadhaarNumber}` : "Leave blank to keep current"}
+            >
+              <Input
+                id="aadhaarNumber"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Enter to update"
+                {...register("aadhaarNumber")}
+              />
+            </FormField>
+            <FormField
+              label="PAN number"
+              htmlFor="panNumber"
+              error={errors.panNumber?.message}
+              hint={shop.panNumber ? `On file: ${shop.panNumber}` : "Leave blank to keep current"}
+            >
+              <Input id="panNumber" autoComplete="off" placeholder="Enter to update" {...register("panNumber")} />
+            </FormField>
+          </div>
           <Button type="submit" loading={update.isPending} disabled={!isDirty}>
             Save details
           </Button>

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserRole } from '@prisma/client';
 import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
+import { requireApprovedShop } from '../../middleware/requireApprovedShop';
 import { validate } from '../../middleware/validate';
 import { asyncHandler } from '../../utils/asyncHandler';
 import { uuidParamSchema } from '../../utils/schemas';
@@ -15,7 +16,8 @@ import {
 
 const router = Router();
 
-router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff));
+// Batches (incl. the FEFO preview) are operational — approved shops only.
+router.use(authenticate, authorize(UserRole.shop_owner, UserRole.shop_staff), requireApprovedShop);
 
 router.get('/', validate({ query: listBatchesQuerySchema }), asyncHandler(batchController.list));
 router.post('/', validate({ body: createBatchSchema }), asyncHandler(batchController.create));

@@ -2,7 +2,7 @@ import express, { Request, Response, Router } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
-import { API_PREFIX } from './config/constants';
+import { API_PREFIX, DOC_UPLOAD_PATH } from './config/constants';
 import { env } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
 import { generalLimiter } from './middleware/rateLimit';
@@ -44,7 +44,19 @@ export function createApp() {
       credentials: true,
     }),
   );
-  app.use(express.json({ limit: '1mb' }));
+  // Global JSON parser with a tight 1mb limit. The document-upload route carries
+  // a larger base64 payload and mounts its OWN higher-limit parser, so we let
+  // that single path bypass this one (a global parser would otherwise consume
+  // the body first and reject it). Every other route keeps the safe 1mb cap.
+  const globalJson = express.json({ limit: '1mb' });
+  app.use((req, res, next) => {
+    const path = req.path.length > 1 && req.path.endsWith('/') ? req.path.slice(0, -1) : req.path;
+    if (req.method === 'POST' && path === DOC_UPLOAD_PATH) {
+      next();
+      return;
+    }
+    globalJson(req, res, next);
+  });
   app.use(cookieParser());
 
   // Liveness probe (unauthenticated, outside the API prefix).

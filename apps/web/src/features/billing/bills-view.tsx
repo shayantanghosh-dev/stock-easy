@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Search } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { Pagination } from "@/components/shared/pagination";
@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDebounce } from "@/hooks/use-debounce";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime, pluralize } from "@/lib/format";
 import type { BillWithItems } from "@/types/models";
@@ -20,12 +21,15 @@ import { useBills } from "./hooks";
 export function BillsView() {
   const router = useRouter();
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const debouncedSearch = useDebounce(search.trim(), 300);
 
   const params = {
     page,
     limit: 20,
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
     ...(from ? { from } : {}),
     ...(to ? { to } : {}),
   };
@@ -89,6 +93,22 @@ export function BillsView() {
       />
 
       <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-[16rem] flex-1 space-y-1.5">
+          <Label htmlFor="bill-search">Search</Label>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-on-surface-variant" />
+            <Input
+              id="bill-search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Bill #, customer name or phone…"
+              className="pl-10"
+            />
+          </div>
+        </div>
         <div className="space-y-1.5">
           <Label htmlFor="from">From</Label>
           <Input
@@ -115,11 +135,12 @@ export function BillsView() {
             className="w-40"
           />
         </div>
-        {from || to ? (
+        {search || from || to ? (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
+              setSearch("");
               setFrom("");
               setTo("");
               setPage(1);
@@ -140,19 +161,27 @@ export function BillsView() {
         onRetry={() => refetch()}
         onRowClick={(b) => router.push(`/bills/${b.id}`)}
         emptyState={
-          <EmptyState
-            icon={Receipt}
-            title="No bills yet"
-            description="Completed sales will appear here."
-            action={
-              <Button asChild>
-                <Link href="/pos">
-                  <Plus className="h-4 w-4" />
-                  New sale
-                </Link>
-              </Button>
-            }
-          />
+          debouncedSearch || from || to ? (
+            <EmptyState
+              icon={Search}
+              title="No matching bills"
+              description="Try a different bill number, customer name, phone, or date range."
+            />
+          ) : (
+            <EmptyState
+              icon={Receipt}
+              title="No bills yet"
+              description="Completed sales will appear here."
+              action={
+                <Button asChild>
+                  <Link href="/pos">
+                    <Plus className="h-4 w-4" />
+                    New sale
+                  </Link>
+                </Button>
+              }
+            />
+          )
         }
       />
 

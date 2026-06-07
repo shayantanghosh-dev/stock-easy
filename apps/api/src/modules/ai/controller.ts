@@ -9,8 +9,8 @@ class AiController {
   query = async (req: Request, res: Response): Promise<void> => {
     const shopId = getShopId(req);
     const { userId } = getAuth(req);
-    const { question } = req.body as AiQueryInput;
-    sendSuccess(res, await aiService.query(shopId, userId, question));
+    const { question, history } = req.body as AiQueryInput;
+    sendSuccess(res, await aiService.query(shopId, userId, question, history));
   };
 
   logs = async (req: Request, res: Response): Promise<void> => {

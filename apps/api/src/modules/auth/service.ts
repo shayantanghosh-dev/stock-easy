@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma';
 import { TRIAL_DAYS } from '../../config/constants';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../../utils/AppError';
 import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from '../../utils/password';
+import { maskShop } from '../../utils/kyc';
 import { generateRefreshToken, hashToken, signAccessToken } from '../../utils/jwt';
 import { refreshTokenRepository, userRepository } from './repository';
 import type { CreateStaffInput, LoginInput, RegisterInput } from './validators';
@@ -56,7 +57,13 @@ class AuthService {
           name: input.shop.name,
           licenseNumber: input.shop.licenseNumber,
           address: input.shop.address,
+          city: input.shop.city,
+          state: input.shop.state,
+          postalCode: input.shop.postalCode,
           phone: input.shop.phone,
+          gstNumber: input.shop.gstNumber,
+          aadhaarNumber: input.shop.aadhaarNumber,
+          panNumber: input.shop.panNumber,
           ownerUserId: user.id,
           status: ShopStatus.pending,
           subscriptionStatus: SubscriptionStatus.trialing,
@@ -127,13 +134,25 @@ class AuthService {
   async me(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { shop: { include: { plan: true } } },
+      include: {
+        shop: {
+          include: {
+            plan: true,
+            // Owner identity travels with the shop so the POS can print a
+            // complete pharmacy invoice header (owner name + contact email).
+            owner: { select: { id: true, fullName: true, email: true } },
+          },
+        },
+      },
     });
     if (!user) {
       throw new NotFoundError('User not found');
     }
     const { passwordHash: _passwordHash, ...safe } = user;
-    return safe;
+    // Mask sensitive KYC identifiers on the shop embedded in /auth/me — this
+    // response goes to owners AND staff. Full values are only ever exposed on
+    // the central-admin verification endpoints.
+    return safe.shop ? { ...safe, shop: maskShop(safe.shop) } : safe;
   }
 
   async createStaff(shopId: string, input: CreateStaffInput): Promise<SafeUser> {

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getAuth } from '../../utils/context';
 import { sendSuccess } from '../../utils/httpResponse';
+import { safeFilename } from '../../utils/kyc';
 import { adminService } from './service';
 import type { ListShopsQuery, RejectShopInput } from './validators';
 
@@ -22,6 +23,18 @@ class AdminController {
 
   analytics = async (_req: Request, res: Response): Promise<void> => {
     sendSuccess(res, await adminService.platformAnalytics());
+  };
+
+  listShopDocuments = async (req: Request, res: Response): Promise<void> => {
+    sendSuccess(res, await adminService.listShopDocuments(req.params.id));
+  };
+
+  downloadShopDocument = async (req: Request, res: Response): Promise<void> => {
+    const doc = await adminService.getShopDocument(req.params.id, req.params.docId);
+    res.setHeader('Content-Type', doc.mimeType);
+    res.setHeader('Content-Length', doc.byteSize);
+    res.setHeader('Content-Disposition', `inline; filename="${safeFilename(doc.originalName)}"`);
+    res.send(doc.buffer);
   };
 }
 

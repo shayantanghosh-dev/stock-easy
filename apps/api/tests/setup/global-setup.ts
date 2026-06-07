@@ -75,10 +75,15 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     }
   }
 
-  // Apply the real migrations (init + contracts) — exactly what runs in prod.
+  // Apply the real migrations — exactly what runs in prod. We MUST override both
+  // DATABASE_URL and DIRECT_URL: the schema's datasource uses `directUrl` for
+  // migrations, so leaving DIRECT_URL pointing at the value in .env would run
+  // `migrate deploy` against the real (e.g. Neon) database instead of this
+  // ephemeral test instance. Pinning both to the provisioned URL keeps tests
+  // hermetic and prevents any accidental writes to production.
   execSync('npx prisma migrate deploy', {
     cwd: process.cwd(),
-    env: { ...process.env, DATABASE_URL: url },
+    env: { ...process.env, DATABASE_URL: url, DIRECT_URL: url },
     stdio: 'inherit',
   });
 

@@ -300,9 +300,10 @@ class BillingService {
 
   async listBills(shopId: string, query: ListBillsQuery): Promise<BillListResult> {
     const { skip, take, page, limit } = getPagination(query);
+    const filters = { from: query.from, to: query.to, search: query.search };
     const [data, total] = await Promise.all([
-      billingRepository.listBills(shopId, { skip, take, from: query.from, to: query.to }),
-      billingRepository.countBills(shopId, { from: query.from, to: query.to }),
+      billingRepository.listBills(shopId, { skip, take, ...filters }),
+      billingRepository.countBills(shopId, filters),
     ]);
     return { data, meta: buildPageMeta(total, page, limit) };
   }

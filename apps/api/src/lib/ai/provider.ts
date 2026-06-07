@@ -35,10 +35,18 @@ export interface AiToolChoice {
   text: string;
 }
 
+/** A prior conversation message threaded into the model for follow-up context. */
+export interface AiChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
+
 export interface ChooseToolInput {
   system: string;
   question: string;
   tools: AiToolDefinition[];
+  /** Prior turns (oldest→newest), already clamped/sanitised by the caller. */
+  history?: AiChatMessage[];
 }
 
 export interface SummarizeInput {

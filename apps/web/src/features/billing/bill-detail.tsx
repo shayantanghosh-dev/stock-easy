@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Ban, Printer, Undo2 } from "lucide-react";
+import { ArrowLeft, Ban, ChevronDown, Printer, Receipt, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PageLoader } from "@/components/shared/page-loader";
 import { ErrorState } from "@/components/shared/error-state";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -18,18 +26,36 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { formatMoney } from "@/lib/money";
 import { formatDateTime, formatMonthYear, humanizeEnum } from "@/lib/format";
+import type { BillWithItems } from "@/types/models";
 import { useBill } from "./hooks";
+import { buildInvoiceHtml, type InvoiceFormat, type InvoiceShop } from "./invoice/invoice-html";
+import { printDocument } from "./invoice/print-document";
 import { ReturnDialog } from "./return-dialog";
 import { VoidDialog } from "./void-dialog";
 
 export function BillDetail({ id }: { id: string }) {
   const { data: bill, isLoading, isError, error, refetch } = useBill(id);
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
   const [returnOpen, setReturnOpen] = useState(false);
   const [voidOpen, setVoidOpen] = useState(false);
 
   if (isLoading) return <PageLoader />;
   if (isError || !bill) return <ErrorState error={error} onRetry={() => refetch()} />;
+
+  const shop = user?.shop;
+  const invoiceShop: InvoiceShop = {
+    name: shop?.name ?? "Pharmacy",
+    address: shop?.address,
+    phone: shop?.phone,
+    gstNumber: shop?.gstNumber,
+    licenseNumber: shop?.licenseNumber,
+    ownerName: shop?.owner?.fullName,
+    ownerEmail: shop?.owner?.email,
+  };
+
+  const handlePrint = (format: InvoiceFormat) => {
+    printDocument(buildInvoiceHtml(invoiceShop, bill as BillWithItems, format));
+  };
 
   const items = bill.items ?? [];
   const returnable = items.reduce((acc, i) => acc + (i.quantity - i.returnedQuantity), 0);
@@ -48,10 +74,27 @@ export function BillDetail({ id }: { id: string }) {
           Back to bills
         </Link>
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => window.print()}>
-            <Printer className="h-4 w-4" />
-            Print
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm">
+                <Printer className="h-4 w-4" />
+                Print invoice
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Choose a format</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => handlePrint("a4")}>
+                <Printer className="h-4 w-4" />
+                A4 tax invoice
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handlePrint("thermal")}>
+                <Receipt className="h-4 w-4" />
+                Thermal receipt (80mm)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {canReturn ? (
             <Button variant="secondary" size="sm" onClick={() => setReturnOpen(true)}>
               <Undo2 className="h-4 w-4" />

@@ -63,11 +63,15 @@ export class GeminiProvider implements AiProvider {
     return this.client;
   }
 
-  async chooseTool({ system, question, tools }: ChooseToolInput): Promise<AiToolChoice> {
+  async chooseTool({ system, question, tools, history }: ChooseToolInput): Promise<AiToolChoice> {
     const client = this.requireClient();
+    const contents: Content[] = [
+      ...(history ?? []).map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
+      { role: "user", parts: [{ text: question }] },
+    ];
     const response = await client.models.generateContent({
       model: this.model,
-      contents: [{ role: "user", parts: [{ text: question }] }],
+      contents,
       config: {
         systemInstruction: system,
         temperature: 0,

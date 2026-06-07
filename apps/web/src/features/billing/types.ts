@@ -19,6 +19,8 @@ export interface ListBillsParams {
   limit?: number;
   from?: string;
   to?: string;
+  /** Free-text: bill number, bill id, customer name or phone. */
+  search?: string;
 }
 
 export interface ReturnBillItemInput {

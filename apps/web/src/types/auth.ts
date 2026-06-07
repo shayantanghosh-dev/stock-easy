@@ -12,6 +12,13 @@ export interface SafeUser {
   isActive: boolean;
 }
 
+/** Owner identity joined onto the shop (used for the invoice header). */
+export interface ShopOwnerRef {
+  id: string;
+  fullName: string;
+  email: string;
+}
+
 /** Full profile returned by GET /auth/me (password stripped, shop + plan joined). */
 export interface MeProfile {
   id: string;
@@ -22,7 +29,7 @@ export interface MeProfile {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  shop?: (Shop & { plan?: SubscriptionPlan | null }) | null;
+  shop?: (Shop & { plan?: SubscriptionPlan | null; owner?: ShopOwnerRef | null }) | null;
 }
 
 export interface LoginResponse {
@@ -48,8 +55,14 @@ export interface RegisterPayload {
   shop: {
     name: string;
     licenseNumber: string;
-    address?: string;
+    address: string;
+    city: string;
+    state: string;
+    postalCode: string;
     phone?: string;
+    gstNumber?: string;
+    aadhaarNumber: string;
+    panNumber: string;
   };
 }
 

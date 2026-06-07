@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Store, X } from "lucide-react";
+import { Check, FileSearch, Store, X } from "lucide-react";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -16,6 +16,7 @@ interface Props {
   onRetry?: () => void;
   onApprove: (shop: ShopWithOwner) => void;
   onReject: (shop: ShopWithOwner) => void;
+  onReview?: (shop: ShopWithOwner) => void;
   approvingId?: string;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -29,6 +30,7 @@ export function AdminShopsTable({
   onRetry,
   onApprove,
   onReject,
+  onReview,
   approvingId,
   emptyTitle = "No shops",
   emptyDescription = "Nothing to show here.",
@@ -69,28 +71,33 @@ export function AdminShopsTable({
       id: "actions",
       header: "",
       align: "right",
-      cell: (s) =>
-        s.status === "pending" ? (
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="success"
-              size="sm"
-              onClick={() => onApprove(s)}
-              loading={approvingId === s.id}
-            >
-              <Check className="h-4 w-4" />
-              Approve
+      cell: (s) => (
+        <div className="flex items-center justify-end gap-2">
+          {s.status === "rejected" && s.rejectionReason ? (
+            <span className="font-label-sm text-[11px] text-error" title={s.rejectionReason}>
+              {s.rejectionReason.length > 28 ? `${s.rejectionReason.slice(0, 28)}…` : s.rejectionReason}
+            </span>
+          ) : null}
+          {onReview ? (
+            <Button variant="secondary" size="sm" onClick={() => onReview(s)}>
+              <FileSearch className="h-4 w-4" />
+              Review
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => onReject(s)}>
-              <X className="h-4 w-4" />
-              Reject
-            </Button>
-          </div>
-        ) : s.status === "rejected" && s.rejectionReason ? (
-          <span className="font-label-sm text-[11px] text-error" title={s.rejectionReason}>
-            {s.rejectionReason.length > 40 ? `${s.rejectionReason.slice(0, 40)}…` : s.rejectionReason}
-          </span>
-        ) : null,
+          ) : null}
+          {s.status === "pending" ? (
+            <>
+              <Button variant="success" size="sm" onClick={() => onApprove(s)} loading={approvingId === s.id}>
+                <Check className="h-4 w-4" />
+                Approve
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => onReject(s)}>
+                <X className="h-4 w-4" />
+                Reject
+              </Button>
+            </>
+          ) : null}
+        </div>
+      ),
     },
   ];
 

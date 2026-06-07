@@ -10,5 +10,11 @@ export const rejectShopSchema = z.object({
   reason: z.string().min(3).max(500),
 });
 
+/** Path params for admin document review: /admin/shops/:id/documents/:docId. */
+export const shopDocumentParamSchema = z.object({
+  id: z.string().uuid(),
+  docId: z.string().uuid(),
+});
+
 export type ListShopsQuery = z.infer<typeof listShopsQuerySchema>;
 export type RejectShopInput = z.infer<typeof rejectShopSchema>;

@@ -27,7 +27,13 @@ export function RegisterForm() {
       shopName: "",
       licenseNumber: "",
       address: "",
+      city: "",
+      state: "",
+      postalCode: "",
       phone: "",
+      gstNumber: "",
+      aadhaarNumber: "",
+      panNumber: "",
     },
   });
 
@@ -69,12 +75,59 @@ export function RegisterForm() {
       <FormField label="License number" htmlFor="licenseNumber" error={errors.licenseNumber?.message} required>
         <Input id="licenseNumber" placeholder="DL-12345-2026" aria-invalid={!!errors.licenseNumber} {...register("licenseNumber")} />
       </FormField>
+      <FormField label="Address" htmlFor="address" error={errors.address?.message} required>
+        <Input id="address" placeholder="12 MG Road" aria-invalid={!!errors.address} {...register("address")} />
+      </FormField>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label="City" htmlFor="city" error={errors.city?.message} required>
+          <Input id="city" placeholder="Bengaluru" aria-invalid={!!errors.city} {...register("city")} />
+        </FormField>
+        <FormField label="State" htmlFor="state" error={errors.state?.message} required>
+          <Input id="state" placeholder="Karnataka" aria-invalid={!!errors.state} {...register("state")} />
+        </FormField>
+        <FormField label="Postal code" htmlFor="postalCode" error={errors.postalCode?.message} required>
+          <Input id="postalCode" inputMode="numeric" placeholder="560001" aria-invalid={!!errors.postalCode} {...register("postalCode")} />
+        </FormField>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label="Phone" htmlFor="phone" error={errors.phone?.message}>
           <Input id="phone" placeholder="+91 98765 43210" {...register("phone")} />
         </FormField>
-        <FormField label="Address" htmlFor="address" error={errors.address?.message}>
-          <Input id="address" placeholder="12 MG Road, Bengaluru" {...register("address")} />
+        <FormField label="GST number" htmlFor="gstNumber" error={errors.gstNumber?.message} hint="Optional">
+          <Input id="gstNumber" placeholder="29ABCDE1234F1Z5" {...register("gstNumber")} />
+        </FormField>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-1">
+        <p className="font-label-sm text-label-sm font-semibold uppercase tracking-wider text-primary">
+          KYC verification
+        </p>
+        <p className="font-body-sm text-body-sm text-on-surface-variant">
+          Required for license verification. You can upload Aadhaar, PAN and license documents right after
+          sign-up, from your approval screen.
+        </p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Aadhaar number" htmlFor="aadhaarNumber" error={errors.aadhaarNumber?.message} required>
+          <Input
+            id="aadhaarNumber"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="123412341234"
+            aria-invalid={!!errors.aadhaarNumber}
+            {...register("aadhaarNumber")}
+          />
+        </FormField>
+        <FormField label="PAN number" htmlFor="panNumber" error={errors.panNumber?.message} required>
+          <Input
+            id="panNumber"
+            autoComplete="off"
+            placeholder="ABCDE1234F"
+            aria-invalid={!!errors.panNumber}
+            {...register("panNumber")}
+          />
         </FormField>
       </div>
 

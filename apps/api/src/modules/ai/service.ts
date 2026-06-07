@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AiLogStatus } from '@prisma/client';
-import { getAiProvider, type AiToolDefinition } from '../../lib/ai';
+import { getAiProvider, type AiChatMessage, type AiToolDefinition } from '../../lib/ai';
 import { logger } from '../../lib/logger';
 import { AppError, ServiceUnavailableError, UnprocessableEntityError } from '../../utils/AppError';
 import { buildPageMeta, getPagination } from '../../utils/pagination';
@@ -8,6 +8,19 @@ import type { PaginationQuery } from '../../utils/schemas';
 import { analyticsService } from '../analytics/service';
 import { aiQueryLogRepository, type CreateAiLogData } from './repository';
 import { AiAnswer, AiToolName, isAiToolName } from './types';
+import type { AiHistoryMessage } from './validators';
+
+/** Keep conversational context cheap + safe: most-recent messages, truncated. */
+const MAX_HISTORY_MESSAGES = 8;
+const MAX_HISTORY_CHARS = 1000;
+
+function toProviderHistory(history: AiHistoryMessage[] | undefined): AiChatMessage[] | undefined {
+  if (!history?.length) return undefined;
+  return history.slice(-MAX_HISTORY_MESSAGES).map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    text: m.content.slice(0, MAX_HISTORY_CHARS),
+  }));
+}
 
 /** Validates/clamps the arguments the model passes for each tool. */
 const toolArgSchemas = {
@@ -94,7 +107,12 @@ class AiService {
     }
   }
 
-  async query(shopId: string, userId: string, question: string): Promise<AiAnswer> {
+  async query(
+    shopId: string,
+    userId: string,
+    question: string,
+    history?: AiHistoryMessage[],
+  ): Promise<AiAnswer> {
     const provider = getAiProvider();
     if (!provider.isConfigured) {
       throw new ServiceUnavailableError('The AI assistant is not configured');
@@ -103,8 +121,14 @@ class AiService {
     const startedAt = Date.now();
 
     try {
-      // Turn 1: the model chooses a report tool (or declines).
-      const choice = await provider.chooseTool({ system: SYSTEM_PROMPT, question, tools });
+      // Turn 1: the model chooses a report tool (or declines), with optional
+      // prior conversation so follow-up questions resolve in context.
+      const choice = await provider.chooseTool({
+        system: SYSTEM_PROMPT,
+        question,
+        tools,
+        history: toProviderHistory(history),
+      });
 
       // The model declined to call a tool (out-of-scope question).
       if (!choice.toolCall) {
