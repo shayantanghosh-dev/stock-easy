@@ -1,5 +1,5 @@
 /** The fixed set of safe, parameterized reports the assistant may invoke. */
-export type AiToolName = 'expiring_soon' | 'low_stock' | 'top_selling' | 'dead_stock' | 'sales_summary';
+export type AiToolName = 'expiring_soon' | 'low_stock' | 'top_selling' | 'dead_stock' | 'sales_summary' | 'stock_lookup';
 
 export const AI_TOOL_NAMES: AiToolName[] = [
   'expiring_soon',
@@ -7,6 +7,7 @@ export const AI_TOOL_NAMES: AiToolName[] = [
   'top_selling',
   'dead_stock',
   'sales_summary',
+  'stock_lookup',
 ];
 
 export function isAiToolName(name: string): name is AiToolName {

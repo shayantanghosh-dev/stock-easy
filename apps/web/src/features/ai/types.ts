@@ -1,5 +1,5 @@
 /** The fixed set of safe reports the assistant may invoke (mirrors the backend). */
-export type AiToolName = "expiring_soon" | "low_stock" | "top_selling" | "dead_stock" | "sales_summary";
+export type AiToolName = "expiring_soon" | "low_stock" | "top_selling" | "dead_stock" | "sales_summary" | "stock_lookup";
 
 /** A prior conversation message sent for multi-turn follow-up context. */
 export interface AiChatMessage {
@@ -25,4 +25,5 @@ export const AI_TOOL_LABEL: Record<AiToolName, string> = {
   top_selling: "Top selling",
   dead_stock: "Dead stock",
   sales_summary: "Sales summary",
+  stock_lookup: "Stock lookup",
 };

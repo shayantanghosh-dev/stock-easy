@@ -9,6 +9,7 @@ import type {
   ExpiringBatch,
   LowStockItem,
   SalesSummary,
+  StockLookupItem,
   TopMedicine,
 } from './types';
 
@@ -140,6 +141,20 @@ export class AnalyticsRepository {
       quantityRemaining: b.quantityRemaining,
       lostValue: Money.format(b.costPrice.mul(b.quantityRemaining)),
     }));
+  }
+
+  stockLookup(shopId: string, name: string): Promise<StockLookupItem[]> {
+    return prisma.$queryRaw<StockLookupItem[]>`
+      SELECT m.id AS "medicineId", m.name, m.strength,
+             COALESCE(SUM(b.quantity_remaining), 0)::int AS "inStock",
+             m.reorder_level AS "reorderLevel"
+      FROM medicines m
+      LEFT JOIN batches b ON b.medicine_id = m.id AND b.quantity_remaining > 0
+      WHERE m.shop_id = ${shopId}::uuid
+        AND m.name ILIKE ${'%' + name + '%'}
+      GROUP BY m.id, m.name, m.strength, m.reorder_level
+      ORDER BY m.name ASC
+      LIMIT 20`;
   }
 }
 

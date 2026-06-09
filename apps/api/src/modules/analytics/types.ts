@@ -36,6 +36,14 @@ export interface TopMedicine {
   revenue: string;
 }
 
+export interface StockLookupItem {
+  medicineId: string;
+  name: string;
+  strength: string | null;
+  inStock: number;
+  reorderLevel: number;
+}
+
 export interface DeadStockItem {
   batchId: string;
   batchNumber: string;

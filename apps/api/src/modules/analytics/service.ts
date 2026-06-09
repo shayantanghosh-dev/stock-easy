@@ -31,6 +31,10 @@ class AnalyticsService {
   deadStock(shopId: string) {
     return analyticsRepository.deadStock(shopId);
   }
+
+  stockLookup(shopId: string, name: string) {
+    return analyticsRepository.stockLookup(shopId, name);
+  }
 }
 
 export const analyticsService = new AnalyticsService();

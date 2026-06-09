@@ -32,6 +32,7 @@ const toolArgSchemas = {
   }),
   dead_stock: z.object({}).strip(),
   sales_summary: z.object({ days: z.number().int().positive().max(3650).default(30) }),
+  stock_lookup: z.object({ name: z.string().min(1).max(200) }),
 } as const;
 
 /**
@@ -68,6 +69,12 @@ const tools: AiToolDefinition[] = [
     description: 'Total sales amount, bill count and discounts over the last N days.',
     parameters: { days: { type: 'number', description: 'Look-back window in days' } },
   },
+  {
+    name: 'stock_lookup',
+    description:
+      'Look up current stock quantity for a specific medicine or brand by name (partial match). Use whenever the user asks about stock level, availability, or quantity of a named medicine.',
+    parameters: { name: { type: 'string', description: 'Medicine name or partial name to search for' } },
+  },
 ];
 
 const SYSTEM_PROMPT =
@@ -101,6 +108,10 @@ class AiService {
       case 'sales_summary': {
         const { days } = toolArgSchemas.sales_summary.parse(rawArgs ?? {});
         return analyticsService.salesSummary(shopId, daysAgo(days), undefined);
+      }
+      case 'stock_lookup': {
+        const { name } = toolArgSchemas.stock_lookup.parse(rawArgs ?? {});
+        return analyticsService.stockLookup(shopId, name);
       }
       default:
         throw new UnprocessableEntityError('Unknown report tool');
